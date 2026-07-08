@@ -43,10 +43,11 @@ export function DiscoveryView({ data }: { data: DashboardData }) {
         <MetricBadge>{pipelineOverview?.entity_types?.topic?.toLocaleString() ?? (pipelineOverview?.entity_count?.toLocaleString() ?? 0)} topics</MetricBadge>
         <MetricBadge>{pipelineOverview?.entity_types?.audience?.toLocaleString() ?? 0} audiences</MetricBadge>
         <MetricBadge>{pipelineOverview?.entity_types?.problem?.toLocaleString() ?? 0} problems</MetricBadge>
-        <MetricBadge>{pipelineOverview?.domain_count ?? 0} domains</MetricBadge>
+        <MetricBadge>{pipelineOverview?.entity_domain_count ?? pipelineOverview?.domain_count ?? 0} domains</MetricBadge>
         <MetricBadge>{pipelineOverview?.entity_count?.toLocaleString() ?? 0} entities</MetricBadge>
         <MetricBadge>{pipelineOverview?.relation_count?.toLocaleString() ?? 0} relations</MetricBadge>
         <MetricBadge>{pipelineOverview?.candidate_count?.toLocaleString() ?? 0} candidates</MetricBadge>
+        <MetricBadge>{pipelineOverview?.candidate_domain_count ?? 0} cand. domains</MetricBadge>
         <MetricBadge>{pipelineOverview?.promoted_candidate_count ?? 0} promoted</MetricBadge>
         <MetricBadge>{pipelineOverview?.rejected_candidate_count ?? 0} blocked</MetricBadge>
       </div>

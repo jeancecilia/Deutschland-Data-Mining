@@ -200,6 +200,8 @@ class DiscoveryOverviewRead(BaseModel):
     domain_count: int = 0
     entity_domain_count: int = 0
     top_domains: list[dict[str, object]] = []
+    candidate_domain_count: int = 0
+    top_candidate_domains: list[dict[str, object]] = []
     relation_count: int
     candidate_count: int
     new_candidate_count: int

@@ -94,6 +94,18 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
     for row in domain_rows:
         top_domains.append({"domain": str(row[0]), "count": int(row[1])})
 
+    # Candidate domain stats (stored in source_entities JSONB column)
+    candidate_domain_count = db.scalar(
+        text("SELECT COUNT(DISTINCT source_entities->>'domain') FROM niche_candidates WHERE source_entities->>'domain' IS NOT NULL")
+    ) or 0
+
+    top_candidate_domains: list[dict[str, object]] = []
+    cand_domain_rows = db.execute(
+        text("SELECT source_entities->>'domain' as domain, COUNT(*) as cnt FROM niche_candidates WHERE source_entities->>'domain' IS NOT NULL GROUP BY domain ORDER BY cnt DESC LIMIT 15")
+    ).all()
+    for row in cand_domain_rows:
+        top_candidate_domains.append({"domain": str(row[0]), "count": int(row[1])})
+
     return DiscoveryOverviewRead(
         source_count=source_count,
         active_source_count=active_source_count,
@@ -104,6 +116,8 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
         domain_count=domain_count,
         entity_domain_count=entity_domain_count,
         top_domains=top_domains,
+        candidate_domain_count=candidate_domain_count,
+        top_candidate_domains=top_candidate_domains,
         relation_count=relation_count,
         candidate_count=candidate_count,
         new_candidate_count=new_candidate_count,
@@ -271,17 +285,38 @@ def get_niche_candidates(
 
 @router.post("/candidates/compose")
 def compose_candidates(
-    limit: int = Query(default=500, ge=10, le=5000),
+    limit: int = Query(default=500, ge=10, le=10000),
+    use_domain_aware: bool = Query(default=True),
+    max_candidates_per_domain: int = Query(default=100, ge=10, le=500),
+    min_domains: int = Query(default=50, ge=1, le=200),
+    max_domains: int = Query(default=100, ge=1, le=2000),
     db: Session = Depends(get_db),
 ) -> dict:
-    batch = compose_niche_candidates(db, limit=limit)
-    return {
-        "created": batch.created,
-        "skipped_no_relation": batch.skipped_no_relation,
-        "skipped_blocked": batch.skipped_blocked,
-        "skipped_duplicate": batch.skipped_duplicate,
-        "skipped_generic": batch.skipped_generic,
-    }
+    if use_domain_aware:
+        from app.services.discovery.domain_composer import compose_domain_aware_candidates
+        result = compose_domain_aware_candidates(
+            db,
+            limit=limit,
+            max_candidates_per_domain=max_candidates_per_domain,
+            min_domains=min_domains,
+            max_domains=max_domains,
+        )
+        return {
+            "created": result.created,
+            "domains_used": result.domains_used,
+            "skipped_duplicate": result.skipped_duplicate,
+            "skipped_blocked": result.skipped_blocked,
+            "skipped_generic": result.skipped_generic,
+        }
+    else:
+        batch = compose_niche_candidates(db, limit=limit)
+        return {
+            "created": batch.created,
+            "skipped_no_relation": batch.skipped_no_relation,
+            "skipped_blocked": batch.skipped_blocked,
+            "skipped_duplicate": batch.skipped_duplicate,
+            "skipped_generic": batch.skipped_generic,
+        }
 
 
 @router.post("/candidates/validate")

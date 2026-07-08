@@ -48,6 +48,10 @@ from app.services.discovery.niche_candidate_composer import (
     ComposeBatch,
     compose_niche_candidates,
 )
+from app.services.discovery.domain_composer import (
+    DomainComposeResult,
+    compose_domain_aware_candidates,
+)
 from app.services.discovery.fast_validator import (
     FastValidationResult,
     validate_candidates_fast,
