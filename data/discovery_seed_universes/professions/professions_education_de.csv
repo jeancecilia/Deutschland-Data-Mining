@@ -6,3 +6,5 @@ Dozent,profession,72,bildung
 Trainer,profession,68,bildung
 Coach,profession,66,beratung
 Berater,profession,62,beratung
+Nachhilfelehrer,profession,74,bildung,nachhilfe,de,DE,
+Bildungsberater,profession,64,bildung,beratung,de,DE,

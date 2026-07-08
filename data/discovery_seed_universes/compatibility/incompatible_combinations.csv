@@ -102,3 +102,10 @@ Homeoffice,Rentner,domain_mismatch,hard_block
 Meal Prep,Kinder,domain_mismatch,hard_block
 Schwangerschaftsyoga,Männer,domain_mismatch,hard_block
 Medikamentenplan,Kinder,domain_mismatch,hard_block
+Buchhaltung,Kinder,domain_mismatch,hard_block
+Rente beantragen,Schüler,life_stage_mismatch,hard_block
+Patientenverfügung,Schüler,life_stage_mismatch,hard_block
+Testament,Kinder,life_stage_mismatch,hard_block
+Gehaltsverhandlung,Rentner,life_stage_mismatch,hard_block
+Vorstellungsgespräch,Rentner,life_stage_mismatch,hard_block
+Welpen Tagebuch,Kleinunternehmer,domain_mismatch,hard_block

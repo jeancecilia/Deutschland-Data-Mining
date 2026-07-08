@@ -1,0 +1,13 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Pflegegrad Antrag,topic,90,senioren,pflege,de,DE,
+Patientenverfügung,topic,84,senioren,recht,de,DE,
+Vorsorgevollmacht,topic,82,senioren,recht,de,DE,
+Testament verfassen,topic,80,senioren,recht,de,DE,
+Altersvorsorge,topic,80,senioren,finanzen,de,DE,
+Rente beantragen,topic,82,senioren,verwaltung,de,DE,
+Seniorenheim finden,topic,78,senioren,pflege,de,DE,
+Sturzprävention,topic,80,senioren,gesundheit,de,DE,
+Seniorengymnastik,topic,76,senioren,sport,de,DE,
+Treppenlift,topic,68,senioren,wohnen,de,DE,
+Hausnotruf,topic,74,senioren,sicherheit,de,DE,
+Pflegetagebuch,topic,80,senioren,tracker,de,DE,

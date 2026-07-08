@@ -1,0 +1,9 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Menschen mit Bluthochdruck,audience,84,gesundheit,herz-kreislauf,de,DE,
+Menschen mit Diabetes,audience,84,gesundheit,stoffwechsel,de,DE,
+Menschen mit chronischen Schmerzen,audience,82,gesundheit,schmerz,de,DE,
+Menschen mit Schlafstörungen,audience,82,gesundheit,schlaf,de,DE,
+Menschen mit Angststörungen,audience,80,gesundheit,psyche,de,DE,
+Menschen mit Depression,audience,80,gesundheit,psyche,de,DE,
+Menschen mit Demenz,audience,82,gesundheit,neurologie,de,DE,
+Reha-Patienten,audience,76,gesundheit,reha,de,DE,

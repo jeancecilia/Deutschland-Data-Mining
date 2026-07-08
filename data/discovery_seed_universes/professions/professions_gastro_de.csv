@@ -1,0 +1,9 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Koch,profession,76,gastronomie,küche,de,DE,
+Gastronom,profession,68,gastronomie,führung,de,DE,
+Kellner,profession,62,gastronomie,service,de,DE,
+Barkeeper,profession,60,gastronomie,bar,de,DE,
+Barista,profession,58,gastronomie,kaffee,de,DE,
+Bäcker,profession,68,handwerk,bäckerei,de,DE,
+Konditor,profession,66,handwerk,konditorei,de,DE,
+Fleischer,profession,64,handwerk,fleischerei,de,DE,

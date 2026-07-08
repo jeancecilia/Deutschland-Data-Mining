@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Bewerbung schreiben,topic,84,karriere,bewerbung,de,DE,
+Vorstellungsgespräch,topic,82,karriere,interview,de,DE,
+Gehaltsverhandlung,topic,80,karriere,finanzen,de,DE,
+Karrierewechsel,topic,78,karriere,umstieg,de,DE,
+LinkedIn Profil,topic,68,karriere,netzwerk,de,DE,
+Weiterbildung planen,topic,74,karriere,lernen,de,DE,
+Arbeitszeugnis verstehen,topic,66,karriere,dokument,de,DE,

@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Pflegeantrag verstehen,problem,88,senioren,pflege,de,DE,
+Pflegegrad beantragen,problem,90,senioren,pflege,de,DE,
+Behördenpost verstehen,problem,84,senioren,verwaltung,de,DE,
+Hausnotruf einrichten,problem,76,senioren,sicherheit,de,DE,
+Seniorenheim suchen,problem,78,senioren,pflege,de,DE,
+Treppenlift planen,problem,68,senioren,wohnen,de,DE,

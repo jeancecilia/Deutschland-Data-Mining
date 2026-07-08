@@ -1,0 +1,6 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Hundehalter,audience,92,haustiere,hunde,de,DE,
+Ersthundbesitzer,audience,88,haustiere,hunde,de,DE,
+Katzenhalter,audience,86,haustiere,katzen,de,DE,
+Tierliebhaber,audience,78,haustiere,allgemein,de,DE,
+Aquarianer,audience,64,haustiere,aquarium,de,DE,

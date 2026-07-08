@@ -8,3 +8,11 @@ Einzelhandelskaufmann,profession,64,handel
 Busfahrer,profession,64,transport
 LKW-Fahrer,profession,68,transport
 Berufskraftfahrer,profession,68,transport
+Fahrlehrer,profession,68,dienstleistung,transport,de,DE,
+Immobilienmakler,profession,72,dienstleistung,immobilien,de,DE,
+Versicherungsmakler,profession,68,dienstleistung,finanzen,de,DE,
+Personalberater,profession,66,dienstleistung,personal,de,DE,
+Eventmanager,profession,62,dienstleistung,events,de,DE,
+Hochzeitsplaner,profession,58,dienstleistung,events,de,DE,
+Reinigungsfachkraft,profession,60,dienstleistung,reinigung,de,DE,
+Sicherheitsdienst,profession,56,dienstleistung,sicherheit,de,DE,

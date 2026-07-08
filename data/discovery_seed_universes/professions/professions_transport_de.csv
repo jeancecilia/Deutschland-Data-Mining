@@ -1,0 +1,11 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+LKW-Fahrer,profession,68,transport,lkw,de,DE,
+Busfahrer,profession,64,transport,personen,de,DE,
+Berufskraftfahrer,profession,68,transport,gewerblich,de,DE,
+Taxifahrer,profession,56,transport,personen,de,DE,
+Lokführer,profession,64,transport,bahn,de,DE,
+Zugbegleiter,profession,54,transport,bahn,de,DE,
+Pilot,profession,68,transport,luft,de,DE,
+Flugbegleiter,profession,58,transport,luft,de,DE,
+Kurierfahrer,profession,56,transport,kep,de,DE,
+Postbote,profession,52,transport,post,de,DE,

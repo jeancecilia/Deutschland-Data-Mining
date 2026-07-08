@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Haushaltsbudget planen,problem,78,haushalt,finanzen,de,DE,
+Einkaufsplanung,problem,74,haushalt,organisation,de,DE,
+Wäsche organisieren,problem,66,haushalt,routine,de,DE,
+Keller aufräumen,problem,64,haushalt,ordnung,de,DE,
+Dachboden ausmisten,problem,62,haushalt,ordnung,de,DE,
+Umzug planen,problem,74,haushalt,wohnen,de,DE,

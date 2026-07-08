@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Gemüsegarten,topic,80,garten,gemüse,de,DE,
+Zimmerpflanzen,topic,74,garten,indoor,de,DE,
+Gartenteich,topic,66,garten,teich,de,DE,
+Rasenpflege,topic,64,garten,rasen,de,DE,
+Kompostieren,topic,66,garten,kompost,de,DE,
+Balkon begrünen,topic,72,garten,balkon,de,DE,
+Gartenplanung,topic,70,garten,planung,de,DE,

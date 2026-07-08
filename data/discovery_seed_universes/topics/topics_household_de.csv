@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Haushaltsbuch,topic,84,haushalt,planer,de,DE,
+Putzplan,topic,78,haushalt,planer,de,DE,
+Essensplan,topic,82,haushalt,planer,de,DE,
+Familienkalender,topic,76,haushalt,planer,de,DE,
+Notfallordner,topic,82,haushalt,organisation,de,DE,
+Dokumentenmappe,topic,80,haushalt,organisation,de,DE,
+Behördenpost organisieren,topic,84,haushalt,organisation,de,DE,
+Passwörter organisieren,topic,72,haushalt,digital,de,DE,
+Minimalismus zu Hause,topic,76,haushalt,lifestyle,de,DE,

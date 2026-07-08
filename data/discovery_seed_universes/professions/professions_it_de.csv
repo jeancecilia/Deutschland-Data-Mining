@@ -1,0 +1,12 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Fachinformatiker,profession,92,it,software,de,DE,
+Softwareentwickler,profession,90,it,software,de,DE,
+Webdesigner,profession,74,it,web,de,DE,
+Webentwickler,profession,76,it,web,de,DE,
+Datenanalyst,profession,72,it,daten,de,DE,
+Systemadministrator,profession,70,it,infrastruktur,de,DE,
+Netzwerktechniker,profession,68,it,netzwerk,de,DE,
+IT-Sicherheitsexperte,profession,74,it,sicherheit,de,DE,
+UX-Designer,profession,66,it,design,de,DE,
+Grafikdesigner,profession,68,it,design,de,DE,
+Datenbankentwickler,profession,66,it,daten,de,DE,

@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Friseur,profession,70,dienstleistung,beauty,de,DE,
+Kosmetikerin,profession,66,dienstleistung,beauty,de,DE,
+Visagistin,profession,58,dienstleistung,beauty,de,DE,
+Nageldesignerin,profession,56,dienstleistung,beauty,de,DE,
+Masseurin,profession,64,dienstleistung,gesundheit,de,DE,
+Wellnessberater,profession,54,dienstleistung,beauty,de,DE,

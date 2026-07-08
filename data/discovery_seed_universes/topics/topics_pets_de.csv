@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Hundetraining Tagebuch,topic,78,haustiere,tracker,de,DE,
+Welpen Tagebuch,topic,80,haustiere,tracker,de,DE,
+Hundeführerschein,topic,72,haustiere,prüfung,de,DE,
+Hundepflege,topic,68,haustiere,pflege,de,DE,
+Hundeernährung,topic,74,haustiere,ernährung,de,DE,
+Katzen Gesundheitstagebuch,topic,72,haustiere,tracker,de,DE,
+Katzenpflege,topic,66,haustiere,pflege,de,DE,

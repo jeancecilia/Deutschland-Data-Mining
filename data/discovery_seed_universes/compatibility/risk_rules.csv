@@ -100,3 +100,6 @@ passiv geld,medium,financial_sensitive,True
 nebenbei geld,medium,financial_sensitive,True
 beschaffung,blocked,illegal_content,False
 darknet,blocked,illegal_content,False
+patientenverfügung,high,legal_sensitive,False
+vorsorgevollmacht,high,legal_sensitive,False
+testament,high,legal_sensitive,False

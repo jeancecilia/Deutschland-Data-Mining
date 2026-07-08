@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Lernplaner,topic,80,lernen,planer,de,DE,
+Prüfungsvorbereitung,topic,86,lernen,prüfung,de,DE,
+Vokabeltrainer,topic,72,lernen,sprache,de,DE,
+Mathe Übungsbuch,topic,68,lernen,mathe,de,DE,
+Sprachen lernen,topic,80,lernen,sprache,de,DE,
+Lerntechniken,topic,78,lernen,methodik,de,DE,
+Gedächtnistraining,topic,78,lernen,gehirn,de,DE,
+Mind Mapping,topic,70,lernen,methodik,de,DE,
+Klassenarbeit Vorbereitung,topic,74,lernen,prüfung,de,DE,

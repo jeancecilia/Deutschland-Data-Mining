@@ -144,3 +144,33 @@ Yoga,Berufstätige,80,compatible,Stressabbau
 Fitness,Sportler,84,compatible,Training
 Krafttraining,Sportler,84,compatible,Muskelaufbau
 Pilates,Sportler,76,compatible,Beweglichkeit
+KI für Handwerker,Handwerker,95,compatible,direkte Zielgruppe
+KI für Pflegekräfte,Pflegekräfte,95,compatible,direkte Zielgruppe
+KI für Immobilienmakler,Immobilienmakler,95,compatible,direkte Zielgruppe
+KI für Coaches,Coach,90,compatible,direkte Zielgruppe
+KI für Lehrer,Lehrer,92,compatible,direkte Zielgruppe
+ChatGPT für Senioren,Senioren,92,compatible,Technik für Ältere
+ChatGPT für Selbstständige,Selbstständige,92,compatible,Business-Tool
+ChatGPT für Studenten,Studenten,90,compatible,Lerntool
+ADHS Planer,Erwachsene mit ADHS,95,compatible,direktes Hilfsmittel
+ADHS Planer,Eltern,88,compatible,Eltern von ADHS-Kindern
+Blutdrucktagebuch,Menschen mit Bluthochdruck,95,compatible,direkter Use Case
+Blutzuckertagebuch,Menschen mit Diabetes,95,compatible,direkter Use Case
+Hundetraining Tagebuch,Hundehalter,95,compatible,direkte Zielgruppe
+Welpen Tagebuch,Ersthundbesitzer,95,compatible,direkter Use Case
+Steuerunterlagen,Selbstständige,92,compatible,starker Use Case
+Steuerunterlagen,Freelancer,90,compatible,Steuerthema
+Pflegegrad Antrag,Angehörige,95,compatible,Angehörige beantragen
+Pflegegrad Antrag,Senioren,92,compatible,direkter Use Case
+Vorsorgevollmacht,Senioren,92,compatible,Vorsorge
+Nebengewerbe,Selbstständige,88,compatible,Existenzgründung
+Nebengewerbe,Kleinunternehmer,86,compatible,Business Start
+Wandern,Senioren,84,compatible,sanfte Bewegung
+Camping,Paare,84,compatible,Paarurlaub
+Stricken,Anfänger,84,compatible,Handarbeit lernen
+Lernplaner,Studenten,92,compatible,Lernhilfe
+Lernplaner,Schüler,88,compatible,Lernhilfe
+Bewerbung,Berufstätige,88,compatible,Karriere
+Bewerbung,Studenten,86,compatible,Berufseinstieg
+Vorstellungsgespräch,Berufstätige,86,compatible,Karriere
+Gehaltsverhandlung,Berufstätige,84,compatible,Karriere

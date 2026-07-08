@@ -11,3 +11,11 @@ Ergotherapeut,profession,80,medizin
 Hebamme,profession,88,medizin
 Notfallsanitäter,profession,86,medizin
 Apotheker,profession,82,medizin
+Pflegefachkraft,profession,96,gesundheit,pflege,de,DE,
+Logopäde,profession,74,gesundheit,sprache,de,DE,
+Podologe,profession,68,gesundheit,fuß,de,DE,
+Rettungsassistent,profession,76,gesundheit,notfall,de,DE,
+Zahntechniker,profession,66,gesundheit,zahn,de,DE,
+Medizinische Fachangestellte,profession,74,gesundheit,praxis,de,DE,
+Operationstechnischer Assistent,profession,72,gesundheit,op,de,DE,
+Diätassistent,profession,66,gesundheit,ernährung,de,DE,
