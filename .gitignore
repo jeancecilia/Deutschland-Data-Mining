@@ -35,6 +35,9 @@ backend/generated_reports/*.pdf
 backend/generated_reports/*.csv
 backend/generated_reports/amazon-storage-state.json
 
+# Celery runtime
+backend/celerybeat-schedule
+
 # Docker volumes
 postgres/
 redis/
