@@ -1,0 +1,31 @@
+﻿topic,audience,reason,severity
+Babyschlaf,Senioren,life_stage_mismatch,hard_block
+Welpentraining,Senioren,domain_mismatch,hard_block
+Hundetraining,Selbstständige,domain_mismatch,hard_block
+Rente beantragen,Schüler,life_stage_mismatch,hard_block
+Pflegegrad Antrag,Handwerker,domain_mismatch,hard_block
+Pflegegrad Widerspruch,Kleinunternehmer,domain_mismatch,hard_block
+Buchhaltung,Kinder,domain_mismatch,hard_block
+Steuererklärung,Kinder,domain_mismatch,hard_block
+KI für Handwerker,Pflegekräfte,domain_mismatch,hard_block
+Hundetraining,Senioren,domain_mismatch,hard_block
+Abitur,Rentner,life_stage_mismatch,hard_block
+Pflegeexamen,Senioren,domain_mismatch,hard_block
+Einbürgerungstest,Hundehalter,domain_mismatch,hard_block
+Krankenhaus Checkliste,Kinder,life_stage_mismatch,hard_block
+Reha Planer,Kinder,life_stage_mismatch,hard_block
+Patientenverfügung,Kinder,life_stage_mismatch,hard_block
+Vorsorgevollmacht,Kinder,life_stage_mismatch,hard_block
+Testament,Kinder,life_stage_mismatch,hard_block
+Altersvorsorge,Kinder,life_stage_mismatch,hard_block
+Altersvorsorge,Schüler,life_stage_mismatch,hard_block
+Gehaltsverhandlung,Rentner,life_stage_mismatch,hard_block
+Vorstellungsgespräch,Rentner,life_stage_mismatch,hard_block
+Existenzgründung,Rentner,life_stage_mismatch,hard_block
+Existenzgründung,Schüler,life_stage_mismatch,hard_block
+Buchhaltung,Senioren,domain_mismatch,hard_block
+SEO Grundlagen,Senioren,domain_mismatch,hard_block
+Bachelorarbeit,Rentner,life_stage_mismatch,hard_block
+Masterarbeit,Rentner,life_stage_mismatch,hard_block
+KI für Friseure,Handwerker,domain_mismatch,hard_block
+ChatGPT für Senioren,Kinder,domain_mismatch,hard_block

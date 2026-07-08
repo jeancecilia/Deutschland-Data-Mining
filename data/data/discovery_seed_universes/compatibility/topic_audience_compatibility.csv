@@ -1,0 +1,77 @@
+﻿topic,audience,confidence,relation_type,notes
+ChatGPT für Handwerker,Handwerker,90,compatible,KI tool
+ChatGPT im Pflegealltag,Pflegekräfte,88,compatible,KI Pflege
+Buchhaltung für Kleinunternehmer,Kleinunternehmer,95,compatible,Business
+Kleinunternehmer Organisation,Kleinunternehmer,90,compatible,Business
+Nebengewerbe Checkliste,Selbstständige,88,compatible,Gründung
+Pflegegrad beantragen,Senioren,95,compatible,Pflege
+Pflegegrad Widerspruch,Angehörige,95,compatible,Pflege
+MD Begutachtung vorbereiten,Angehörige,92,compatible,Pflege
+Pflegeunterlagen organisieren,Pflegekräfte,90,compatible,Pflege
+Pflege-Tagebuch,Pflegekräfte,88,compatible,Doku
+Pflegeprotokoll,Pflegekräfte,90,compatible,Doku
+Blutdrucktagebuch,Senioren,95,compatible,Tracker
+Blutdrucktagebuch,Menschen mit Bluthochdruck,95,compatible,Gesundheit
+Blutzuckertagebuch,Menschen mit Diabetes,95,compatible,Gesundheit
+Medikamentenplan,Senioren,95,compatible,Gesundheit
+Medikamentenplan,Angehörige,92,compatible,Pflege
+Arzttermin Vorbereitung,Senioren,90,compatible,Gesundheit
+Schlafprotokoll,Menschen mit Schlafstörungen,90,compatible,Gesundheit
+Hundetraining Tagebuch,Hundehalter,92,compatible,Hund
+Welpentraining Planer,Ersthundbesitzer,95,compatible,Hund
+Leinenführigkeit Hund,Hundehalter,95,compatible,Hund
+Rückruftraining Hund,Hundehalter,92,compatible,Hund
+Angsthund Training,Hundehalter,88,compatible,Hund
+Abitur Lernplan,Schüler,92,compatible,Prüfung
+IHK Prüfungsvorbereitung,Azubis,92,compatible,Prüfung
+AEVO Prüfung,Azubis,88,compatible,Prüfung
+Einbürgerungstest,Deutschlernende,90,compatible,Prüfung
+Deutsch B1 Prüfung,Deutschlernende,90,compatible,Sprache
+Deutsch B2 Prüfung,Deutschlernende,88,compatible,Sprache
+Haushaltsbuch,Familien,88,compatible,Finanzen
+Putzplan,Familien,84,compatible,Haushalt
+Essensplan,Familien,86,compatible,Ernährung
+Notfallordner,Familien,86,compatible,Organisation
+Notfallordner,Senioren,90,compatible,Vorsorge
+Dokumentenmappe,Selbstständige,82,compatible,Buchhaltung
+Digitale Ordnung,Berufstätige,82,compatible,Organisation
+Bewerbung schreiben,Berufstätige,88,compatible,Karriere
+Vorstellungsgespräch,Berufstätige,86,compatible,Karriere
+Gehaltsverhandlung,Berufstätige,84,compatible,Karriere
+Fotografie für Anfänger,Hobbyfotografen,88,compatible,Hobby
+Yoga für Anfänger,Anfänger,88,compatible,Sport
+Kochen lernen,Anfänger,90,compatible,Kochen
+Balkongarten,Stadtbewohner,88,compatible,Garten
+Balkongarten,Anfänger,86,compatible,Garten
+Babyschlaf,Eltern,92,compatible,Familie
+Pubertät,Eltern,88,compatible,Familie
+Hausaufgaben,Eltern,84,compatible,Schule
+Lernplan,Studenten,88,compatible,Lernen
+Lernplan,Schüler,86,compatible,Lernen
+Bachelorarbeit,Studenten,88,compatible,Studium
+Masterarbeit,Studenten,86,compatible,Studium
+Rechnungsvorlagen,Selbstständige,90,compatible,Business
+Angebotsvorlagen,Selbstständige,88,compatible,Business
+Steuerunterlagen sortieren,Selbstständige,90,compatible,Steuer
+Kleinunternehmer Steuer,Kleinunternehmer,90,compatible,Steuer
+Strom sparen,Hausbesitzer,80,compatible,Haushalt
+Heizkosten senken,Mieter,78,compatible,Haushalt
+Umzug Checkliste,Mieter,84,compatible,Wohnen
+Wochenplaner,Berufstätige,82,compatible,Organisation
+Wochenplaner,Familien,84,compatible,Familie
+Minimalismus zu Hause,Berufstätige,78,compatible,Lifestyle
+ChatGPT für Senioren,Senioren,88,compatible,Technik
+KI für Kleinunternehmer,Kleinunternehmer,88,compatible,Business
+KI für Immobilienmakler,Immobilienmakler,90,compatible,Beruf
+KI für Coaches,Coach,86,compatible,Beruf
+KI für Steuerberater,Steuerberater,84,compatible,Beruf
+Katzen Eingewöhnung,Katzenhalter,88,compatible,Haustier
+Behördenpost organisieren,Senioren,90,compatible,Verwaltung
+Behördenpost organisieren,Berufstätige,82,compatible,Verwaltung
+Krankenhaus Checkliste,Angehörige,88,compatible,Pflege
+Reha Planer,Reha-Patienten,90,compatible,Reha
+Schmerztagebuch,Menschen mit chronischen Schmerzen,90,compatible,Gesundheit
+Stimmungstagebuch,Menschen mit Depression,86,compatible,Gesundheit
+Ernährungsprotokoll,Menschen mit Diabetes,84,compatible,Gesundheit
+Krafttraining Trainingsplan,Sportler,86,compatible,Fitness
+Karrierewechsel,Berufstätige,82,compatible,Karriere
