@@ -96,8 +96,8 @@ class RelationBuilderResult:
     skipped: int
     co_occurrence: int
     dict_pairs: int
-    domain_relations: int = 0
     relations: list[DiscoveryEntityRelation]
+    domain_relations: int = 0
 
 
 def _load_existing_relations(db: Session) -> set[tuple[int, int, str]]:
