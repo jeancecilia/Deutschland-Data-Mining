@@ -2,6 +2,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from scale_seed_network import append_csv, append_compat, append_incompat, append_risk
+# NOTE: All file paths below are relative to data/discovery_seed_universes/
 
 total = 0
 
