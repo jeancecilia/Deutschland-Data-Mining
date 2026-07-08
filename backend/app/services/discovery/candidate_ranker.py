@@ -304,9 +304,9 @@ def rank_candidates_for_validation(
         all_scores.append(pre_val)
         top_score = max(top_score, pre_val)
 
-        # Raised thresholds: 80+ queued, 70-79 manual_review, <70 rejected
+        # Calibrated thresholds: 70+ queued, 60-69 manual_review, <60 rejected
         status = "rejected_pre_validation"
-        if pre_val >= 80:
+        if pre_val >= 70:
             if max_per_macro_domain and macro and macro_counts.get(macro, 0) >= max_per_macro_domain:
                 status = "manual_review"
             elif max_per_subdomain and sub and sub_counts.get(sub, 0) >= max_per_subdomain:
