@@ -1,0 +1,6 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Pflegeexamen,exam,92,gesundheit,pflege,DE,,
+Physiotherapie Examen,exam,84,gesundheit,therapie,DE,,
+Ergotherapie Examen,exam,80,gesundheit,therapie,DE,,
+Hebammenexamen,exam,86,gesundheit,geburt,DE,,
+Notfallsanitäter Prüfung,exam,84,gesundheit,notfall,DE,,

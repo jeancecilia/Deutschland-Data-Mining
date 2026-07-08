@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Eltern von Grundschulkindern,audience,86,familie,schule,DE,,
+Eltern von Teenagern,audience,84,familie,pubertät,DE,,
+Werdende Mütter,audience,88,familie,schwangerschaft,DE,,
+Werdende Väter,audience,84,familie,schwangerschaft,DE,,
+Eltern von ADHS-Kindern,audience,88,familie,gesundheit,DE,,
+Eltern von hochbegabten Kindern,audience,74,familie,bildung,DE,,

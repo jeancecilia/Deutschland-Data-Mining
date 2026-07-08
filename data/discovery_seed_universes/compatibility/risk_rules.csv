@@ -103,3 +103,13 @@ darknet,blocked,illegal_content,False
 patientenverfügung,high,legal_sensitive,False
 vorsorgevollmacht,high,legal_sensitive,False
 testament,high,legal_sensitive,False
+antidepressiva,high,health_sensitive,False
+insulin,high,health_sensitive,False
+blutverdünner,high,health_sensitive,False
+steuerbescheid,high,legal_sensitive,False
+ETF,high,financial_sensitive,False
+selbstverletzung,blocked,unsafe_content,False
+therapieplan,high,health_sensitive,False
+psychotherapie,high,health_sensitive,False
+magersucht,high,health_sensitive,False
+bulimie,high,health_sensitive,False

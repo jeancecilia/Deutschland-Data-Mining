@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Landwirt,profession,66,landwirtschaft,de,DE,,
+Gärtner,profession,70,landwirtschaft,de,DE,,
+Florist,profession,64,landwirtschaft,de,DE,,
+Winzer,profession,62,landwirtschaft,de,DE,,
+Forstwirt,profession,60,landwirtschaft,de,DE,,
+Pferdewirt,profession,56,landwirtschaft,de,DE,,
+Landschaftsgärtner,profession,68,landwirtschaft,de,DE,,

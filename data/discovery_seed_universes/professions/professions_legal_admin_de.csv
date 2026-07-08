@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Rechtsanwalt,profession,76,recht,de,DE,,
+Notar,profession,72,recht,de,DE,,
+Steuerberater,profession,78,finanzen,de,DE,,
+Buchhalter,profession,74,finanzen,de,DE,,
+Verwaltungsfachangestellter,profession,66,verwaltung,de,DE,,
+Beamter,profession,70,verwaltung,de,DE,,

@@ -1,0 +1,6 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Steuerberaterexamen,exam,78,finanzen,steuer,DE,,
+Wirtschaftsprüferexamen,exam,74,finanzen,prüfung,DE,,
+Bilanzbuchhalter Prüfung,exam,72,finanzen,buchhaltung,DE,,
+Immobilienmakler Prüfung,exam,68,immobilien,makler,DE,,
+Versicherungsfachmann Prüfung,exam,64,finanzen,versicherung,DE,,

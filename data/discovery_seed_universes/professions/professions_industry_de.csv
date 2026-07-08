@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Chemikant,profession,66,industrie,chemie,DE,,
+Pharmakant,profession,68,industrie,pharma,DE,,
+Maschinenführer,profession,64,industrie,produktion,DE,,
+Lagerlogistiker,profession,62,industrie,logistik,DE,,
+Qualitätsprüfer,profession,64,industrie,qualität,DE,,
+Elektroniker Betriebstechnik,profession,74,industrie,elektro,DE,,

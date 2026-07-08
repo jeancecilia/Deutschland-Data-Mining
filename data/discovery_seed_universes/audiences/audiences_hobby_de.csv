@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Hobbygärtner,audience,80,hobby,garten,DE,,
+Hobbyfotografen,audience,78,hobby,fotografie,DE,,
+Hobbyköche,audience,82,hobby,kochen,DE,,
+Hobbybäcker,audience,80,hobby,backen,DE,,
+Heimwerker,audience,78,hobby,handwerk,DE,,
+DIY-Fans,audience,76,hobby,kreativ,DE,,

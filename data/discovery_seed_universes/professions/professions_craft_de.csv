@@ -25,3 +25,7 @@ Ofenbauer,profession,60,handwerk
 Straßenbauer,profession,62,handwerk,tiefbau,de,DE,
 Schornsteinfeger,profession,68,handwerk,gebäude,de,DE,
 Gerüstbauer,profession,64,handwerk,bau,de,DE,
+Industriemechaniker,profession,78,industrie,mechanik,DE,,
+Augenoptiker,profession,68,handwerk,optik,DE,,
+Hörgeräteakustiker,profession,66,handwerk,gesundheit,DE,,
+Zahntechniker,profession,64,handwerk,gesundheit,DE,,

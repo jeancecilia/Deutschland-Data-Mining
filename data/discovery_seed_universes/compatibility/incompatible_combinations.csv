@@ -109,3 +109,14 @@ Testament,Kinder,life_stage_mismatch,hard_block
 Gehaltsverhandlung,Rentner,life_stage_mismatch,hard_block
 Vorstellungsgespräch,Rentner,life_stage_mismatch,hard_block
 Welpen Tagebuch,Kleinunternehmer,domain_mismatch,hard_block
+Pflegegrad Antrag,Handwerker,domain_mismatch,hard_block
+KI für Handwerker,Pflegekräfte,domain_mismatch,hard_block
+Hundetraining,Selbstständige,domain_mismatch,hard_block
+Abitur,Rentner,life_stage_mismatch,hard_block
+Bachelorarbeit,Rentner,life_stage_mismatch,hard_block
+Masterarbeit,Rentner,life_stage_mismatch,hard_block
+Steuererklärung,Kinder,domain_mismatch,hard_block
+SEO Grundlagen,Senioren,domain_mismatch,hard_block
+Krankenhaus Checkliste,Kinder,life_stage_mismatch,hard_block
+Pflegeexamen,Rentner,life_stage_mismatch,hard_block
+Reha Planer,Kinder,life_stage_mismatch,hard_block

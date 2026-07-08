@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Journalist,profession,66,medien,de,DE,,
+Redakteur,profession,64,medien,de,DE,,
+Texter,profession,60,medien,de,DE,,
+Social Media Manager,profession,66,medien,de,DE,,
+Grafikdesigner,profession,68,medien,de,DE,,
+Fotograf,profession,66,medien,de,DE,,
+Videograf,profession,62,medien,de,DE,,

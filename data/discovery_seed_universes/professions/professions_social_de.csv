@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain,subdomain,language,country,notes
+Sozialarbeiter,profession,74,sozial,de,DE,,
+Sozialpädagoge,profession,78,sozial,de,DE,,
+Heilerziehungspfleger,profession,70,sozial,de,DE,,
+Familienhelfer,profession,66,sozial,de,DE,,
+Schulbegleiter,profession,64,sozial,de,DE,,
+Betreuungskraft,profession,68,sozial,de,DE,,
