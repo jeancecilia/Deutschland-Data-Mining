@@ -257,3 +257,118 @@ def compose_domain_aware_candidates(
         skipped_blocked=skipped_blocked,
         skipped_generic=skipped_generic,
     )
+
+
+def compose_micro_domain_candidates(
+    db: Session,
+    *,
+    limit: int = 30000,
+    max_candidates_per_micro_domain: int = 3,
+    max_micro_domains: int = 10000,
+) -> DomainComposeResult:
+    """Generate candidates from the micro-domain catalog.
+
+    Each micro-domain entity has metadata with:
+      macro_domain, subdomain, micro_domain, audience_hint, problem_hint, format_hint
+
+    Templates use these hints directly."""
+    from sqlalchemy import select as sa_select
+
+    # Load micro-domain entities
+    micro_rows = db.execute(text(
+        "SELECT id, name, metadata_json FROM discovery_entities "
+        "WHERE metadata_json->>'source' = 'micro_domain_catalog_10k_de' "
+        "ORDER BY metadata_json->>'priority' DESC "
+        "LIMIT :limit"
+    ), {"limit": max_micro_domains}).fetchall()
+
+    if not micro_rows:
+        return DomainComposeResult(0, 0, 0, 0, 0)
+
+    existing_names: set[str] = set(db.scalars(sa_select(NicheCandidate.normalized_name)))
+
+    MICRO_TEMPLATES = [
+        "{topic} {format}",
+        "{topic} für {audience}",
+        "{topic} {format} für {audience}",
+        "{topic} Hilfe bei {problem}",
+        "{topic} Schritt-für-Schritt",
+    ]
+
+    created_total = 0
+    domains_used = 0
+    skipped_duplicate = 0
+    skipped_blocked = 0
+    skipped_generic = 0
+
+    for eid, ename, meta in micro_rows:
+        if created_total >= limit:
+            break
+        if not meta:
+            continue
+
+        macro = meta.get("macro_domain", "")
+        sub = meta.get("subdomain", "")
+        audience = meta.get("audience_hint", "")
+        problem = meta.get("problem_hint", "")
+        fmt = meta.get("format_hint", "")
+        if not audience or not fmt:
+            continue
+
+        created_for_this = 0
+        for tpl in MICRO_TEMPLATES:
+            if created_total >= limit or created_for_this >= max_candidates_per_micro_domain:
+                break
+
+            phrase = tpl.format(topic=ename, audience=audience, problem=problem, format=fmt)
+            normalized = normalize_entity_name(phrase)
+            if not normalized or normalized in existing_names:
+                if normalized in existing_names:
+                    skipped_duplicate += 1
+                continue
+            if is_too_generic(phrase):
+                skipped_generic += 1
+                continue
+
+            compat = check_semantic_compatibility(ename, audience)
+            if not compat.compatible:
+                skipped_blocked += 1
+                continue
+
+            candidate = NicheCandidate(
+                candidate_name=phrase,
+                normalized_name=normalized,
+                main_topic_entity_id=eid,
+                book_class_guess="sachbuch",
+                language="de",
+                marketplace="amazon.de",
+                generation_template=f"micro_domain:{tpl[:40]}",
+                source_entities={
+                    "topic": eid, "domain": macro,
+                    "macro_domain": macro, "subdomain": sub,
+                    "micro_domain": ename,
+                    "source": "micro_domain_catalog_10k_de",
+                },
+                confidence=50,
+                risk_level="low",
+                status="new",
+            )
+            db.add(candidate)
+            db.flush()
+            existing_names.add(normalized)
+            created_for_this += 1
+            created_total += 1
+
+        if created_for_this > 0:
+            domains_used += 1
+
+    if created_total:
+        db.commit()
+
+    return DomainComposeResult(
+        created=created_total,
+        domains_used=domains_used,
+        skipped_duplicate=skipped_duplicate,
+        skipped_blocked=skipped_blocked,
+        skipped_generic=skipped_generic,
+    )

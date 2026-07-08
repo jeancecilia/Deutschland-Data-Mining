@@ -51,6 +51,7 @@ from app.services.discovery.niche_candidate_composer import (
 from app.services.discovery.domain_composer import (
     DomainComposeResult,
     compose_domain_aware_candidates,
+    compose_micro_domain_candidates,
 )
 from app.services.discovery.fast_validator import (
     FastValidationResult,

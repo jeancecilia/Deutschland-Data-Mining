@@ -285,14 +285,32 @@ def get_niche_candidates(
 
 @router.post("/candidates/compose")
 def compose_candidates(
-    limit: int = Query(default=500, ge=10, le=10000),
+    limit: int = Query(default=500, ge=10, le=50000),
     use_domain_aware: bool = Query(default=True),
+    use_micro_domains: bool = Query(default=False),
     max_candidates_per_domain: int = Query(default=100, ge=10, le=500),
+    max_candidates_per_micro_domain: int = Query(default=3, ge=1, le=10),
     min_domains: int = Query(default=50, ge=1, le=200),
     max_domains: int = Query(default=100, ge=1, le=2000),
+    max_micro_domains: int = Query(default=10000, ge=1, le=20000),
     db: Session = Depends(get_db),
 ) -> dict:
-    if use_domain_aware:
+    if use_micro_domains:
+        from app.services.discovery.domain_composer import compose_micro_domain_candidates
+        result = compose_micro_domain_candidates(
+            db,
+            limit=limit,
+            max_candidates_per_micro_domain=max_candidates_per_micro_domain,
+            max_micro_domains=max_micro_domains,
+        )
+        return {
+            "created": result.created,
+            "domains_used": result.domains_used,
+            "skipped_duplicate": result.skipped_duplicate,
+            "skipped_blocked": result.skipped_blocked,
+            "skipped_generic": result.skipped_generic,
+        }
+    elif use_domain_aware:
         from app.services.discovery.domain_composer import compose_domain_aware_candidates
         result = compose_domain_aware_candidates(
             db,
