@@ -46,7 +46,7 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
         DiscoveryEntityRelation,
         NicheCandidate,
     )
-    from sqlalchemy import func
+    from sqlalchemy import func, select
 
     source_count = db.scalar(select(func.count(DiscoverySource.id))) or 0
     active_source_count = db.scalar(

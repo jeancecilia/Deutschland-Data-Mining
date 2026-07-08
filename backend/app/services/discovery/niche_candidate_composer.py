@@ -61,13 +61,7 @@ def compose_niche_candidates(
     entity_map: dict[int, DiscoveryEntity] = {e.id: e for e in entities}
 
     # Load active relations
-    relations = list(
-        db.scalars(
-            select(DiscoveryEntityRelation).where(
-                DiscoveryEntityRelation.active == True  # noqa: E712
-            )
-        )
-    )
+    relations = list(db.scalars(select(DiscoveryEntityRelation)))
 
     # Build adjacency: entity_id → list of (target_entity, relation_type)
     adjacency: dict[int, list[tuple[DiscoveryEntity, str]]] = {}
