@@ -40,14 +40,15 @@ export function DiscoveryView({ data }: { data: DashboardData }) {
 
       {/* ── Unified Stats ─────────────────────────────────────────── */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <MetricBadge>{data.discoveryUniverse?.topics.length ?? 0} topics</MetricBadge>
-        <MetricBadge>{data.discoveryUniverse?.audiences.length ?? 0} audiences</MetricBadge>
-        <MetricBadge>{pipelineOverview?.entity_count ?? 0} entities</MetricBadge>
-        <MetricBadge>{pipelineOverview?.relation_count ?? 0} relations</MetricBadge>
-        <MetricBadge>{pipelineOverview?.candidate_count ?? 0} pipeline candidates</MetricBadge>
-        <MetricBadge>{validatedCount} validated</MetricBadge>
-        <MetricBadge>{goCount} GO</MetricBadge>
+        <MetricBadge>{pipelineOverview?.entity_types?.topic?.toLocaleString() ?? (pipelineOverview?.entity_count?.toLocaleString() ?? 0)} topics</MetricBadge>
+        <MetricBadge>{pipelineOverview?.entity_types?.audience?.toLocaleString() ?? 0} audiences</MetricBadge>
+        <MetricBadge>{pipelineOverview?.entity_types?.problem?.toLocaleString() ?? 0} problems</MetricBadge>
+        <MetricBadge>{pipelineOverview?.domain_count ?? 0} domains</MetricBadge>
+        <MetricBadge>{pipelineOverview?.entity_count?.toLocaleString() ?? 0} entities</MetricBadge>
+        <MetricBadge>{pipelineOverview?.relation_count?.toLocaleString() ?? 0} relations</MetricBadge>
+        <MetricBadge>{pipelineOverview?.candidate_count?.toLocaleString() ?? 0} candidates</MetricBadge>
         <MetricBadge>{pipelineOverview?.promoted_candidate_count ?? 0} promoted</MetricBadge>
+        <MetricBadge>{pipelineOverview?.rejected_candidate_count ?? 0} blocked</MetricBadge>
       </div>
 
       {/* ── Controls ──────────────────────────────────────────────── */}
@@ -102,11 +103,11 @@ export function DiscoveryView({ data }: { data: DashboardData }) {
 
         <div style={{ display: "grid", gap: 6, marginTop: 12 }}>
           <span style={{ color: "var(--muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            Priority Topics
+            Top Domains (from {pipelineOverview?.domain_count ?? 0} total)
           </span>
           <CompactList
-            items={(data.discoveryUniverse?.topics ?? []).slice(0, 6).map((item) => item.name)}
-            emptyText="No discovery universe loaded yet."
+            items={(pipelineOverview?.top_domains ?? []).slice(0, 10).map((d) => `${d.domain} (${d.count.toLocaleString()})`)}
+            emptyText="No domains loaded yet. Import seed data first."
           />
         </div>
       </Panel>

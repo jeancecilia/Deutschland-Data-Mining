@@ -46,7 +46,7 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
         DiscoveryEntityRelation,
         NicheCandidate,
     )
-    from sqlalchemy import func, select
+    from sqlalchemy import func, select, text
 
     source_count = db.scalar(select(func.count(DiscoverySource.id))) or 0
     active_source_count = db.scalar(
@@ -69,12 +69,35 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
         select(func.count(NicheCandidate.id)).where(NicheCandidate.status == "rejected")
     ) or 0
 
+    # Entity type breakdown
+    entity_types: dict[str, int] = {}
+    type_rows = db.execute(
+        text("SELECT entity_type, COUNT(*) FROM discovery_entities GROUP BY entity_type ORDER BY COUNT(*) DESC")
+    ).all()
+    for row in type_rows:
+        entity_types[str(row[0])] = int(row[1])
+
+    # Domain stats (from entity metadata_json)
+    domain_count = db.scalar(
+        text("SELECT COUNT(DISTINCT metadata_json->>'domain') FROM raw_discovery_items WHERE metadata_json->>'domain' IS NOT NULL")
+    ) or 0
+
+    top_domains: list[dict[str, object]] = []
+    domain_rows = db.execute(
+        text("SELECT metadata_json->>'domain' as domain, COUNT(*) as cnt FROM raw_discovery_items WHERE metadata_json->>'domain' IS NOT NULL GROUP BY domain ORDER BY cnt DESC LIMIT 10")
+    ).all()
+    for row in domain_rows:
+        top_domains.append({"domain": str(row[0]), "count": int(row[1])})
+
     return DiscoveryOverviewRead(
         source_count=source_count,
         active_source_count=active_source_count,
         raw_item_count=raw_item_count,
         unprocessed_raw_count=unprocessed_raw_count,
         entity_count=entity_count,
+        entity_types=entity_types,
+        domain_count=domain_count,
+        top_domains=top_domains,
         relation_count=relation_count,
         candidate_count=candidate_count,
         new_candidate_count=new_candidate_count,

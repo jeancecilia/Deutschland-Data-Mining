@@ -196,6 +196,9 @@ class DiscoveryOverviewRead(BaseModel):
     raw_item_count: int
     unprocessed_raw_count: int
     entity_count: int
+    entity_types: dict[str, int] = {}
+    domain_count: int = 0
+    top_domains: list[dict[str, object]] = []
     relation_count: int
     candidate_count: int
     new_candidate_count: int

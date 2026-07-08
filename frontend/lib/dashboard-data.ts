@@ -160,6 +160,9 @@ export type DiscoveryPipelineOverview = {
   raw_item_count: number;
   unprocessed_raw_count: number;
   entity_count: number;
+  entity_types: Record<string, number>;
+  domain_count: number;
+  top_domains: Array<{ domain: string; count: number }>;
   relation_count: number;
   candidate_count: number;
   new_candidate_count: number;
