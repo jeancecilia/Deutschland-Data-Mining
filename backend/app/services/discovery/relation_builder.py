@@ -241,7 +241,7 @@ def build_entity_relations(
                 existing.add(key)
                 result_relations.append(relation)
                 created += 1
-                domain_count += 1
+                domain_relations_count += 1
 
         # Topic → Problem (within domain)
         for tid in topic_ids[:max_per_domain // 10]:
@@ -262,7 +262,7 @@ def build_entity_relations(
                 existing.add(key)
                 result_relations.append(relation)
                 created += 1
-                domain_count += 1
+                domain_relations_count += 1
 
     # ── Strategy 3: Cross-type relations (non-topic entities) ─────────
     # Profession ↔ Exam
