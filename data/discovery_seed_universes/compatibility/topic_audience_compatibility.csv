@@ -52,3 +52,95 @@ Lernorganisation,Studenten,92,compatible,Lernhilfe
 Lernorganisation,Schüler,88,compatible,Lernhilfe
 Prüfungsvorbereitung,Studenten,92,compatible,Lernhilfe
 Prüfungsvorbereitung,Azubis,88,compatible,Ausbildungsprüfung
+Nebengewerbe starten,Selbstständige,90,compatible,Existenzgründung
+Nebengewerbe starten,Kleinunternehmer,88,compatible,kleine Betriebe
+Kundengewinnung,Selbstständige,90,compatible,Business-Thema
+Kundengewinnung,Freelancer,85,compatible,Akquise-Thema
+Social Media Marketing,Selbstständige,88,compatible,Marketing
+Social Media Marketing,Kleinunternehmer,85,compatible,Marketing
+Zeitmanagement,Berufstätige,90,compatible,Produktivität
+Zeitmanagement,Selbstständige,88,compatible,Produktivität
+Zeitmanagement,Studenten,85,compatible,Lernplanung
+Produktivität,Berufstätige,88,compatible,Arbeitsalltag
+Produktivität,Selbstständige,88,compatible,Selbstorganisation
+Homeoffice,Berufstätige,92,compatible,Remote Work
+Homeoffice,Selbstständige,88,compatible,Home Office
+Haushaltsbuch,Familien,88,compatible,Budgetplanung
+Haushaltsbuch,Singles,82,compatible,persönliche Finanzen
+Haushaltsbuch,Studenten,80,compatible,erstes Budget
+Putzplan,Familien,84,compatible,Haushaltsorganisation
+Putzplan,Singles,78,compatible,Haushaltsorganisation
+Putzplan,Berufstätige,82,compatible,schnelle Reinigung
+Essensplan,Berufstätige,88,compatible,Meal Prep
+Essensplan,Singles,82,compatible,Meal Prep
+Meal Prep,Berufstätige,90,compatible,Essensvorbereitung
+Meal Prep,Schichtarbeiter,88,compatible,Schichtarbeit
+Meal Prep,Studenten,84,compatible,günstig kochen
+Minimalismus,Berufstätige,80,compatible,Lebensstil
+Minimalismus,Familien,78,compatible,Ausmisten
+Aufräumen,Familien,82,compatible,Ordnung
+Aufräumen,Erwachsene mit ADHS,88,compatible,ADHS
+Notfallordner,Familien,86,compatible,Dokumente
+Notfallordner,Senioren,90,compatible,Vorsorge
+Notfallordner,Angehörige,88,compatible,Pflegeorganisation
+Dokumentenmappe,Selbstständige,82,compatible,Buchhaltung
+Dokumentenmappe,Familien,80,compatible,Haushalt
+Behördenpost organisieren,Senioren,90,compatible,Verwaltung
+Behördenpost organisieren,Angehörige,88,compatible,Unterstützung
+Behördenpost organisieren,Berufstätige,82,compatible,Verwaltung
+Leinenführigkeit,Hundehalter,95,compatible,Hundetraining
+Rückruf,Hundehalter,95,compatible,Hundetraining
+Angsthund Training,Hundehalter,92,compatible,Problemhund
+Welpentagebuch,Hundehalter,90,compatible,Welpen
+Ernährungstagebuch,Diabetiker,88,compatible,Blutzucker
+Ernährungstagebuch,Sportler,84,compatible,Fitness
+Schlaftagebuch,Menschen mit Schlafproblemen,90,compatible,Schlaf
+Schmerztagebuch,Menschen mit chronischen Schmerzen,88,compatible,Schmerz
+Medikamentenplan,Pflegebedürftige,92,compatible,Medikation
+Vorlesen,Eltern,88,compatible,Kinder
+Vorlesen,Großeltern,84,compatible,Enkel
+Hausaufgaben,Eltern,86,compatible,Schule
+Hausaufgaben,Schüler,84,compatible,Lernhilfe
+Pubertät,Eltern,90,compatible,Erziehung
+Kindergeburtstag,Eltern,82,compatible,Planung
+Kindergeburtstag,Mütter,84,compatible,Organisation
+Lernorganisation,Erwachsene mit ADHS,88,compatible,ADHS Strategie
+Lernplan,Schüler,84,compatible,Schule
+Lernplan,Studenten,86,compatible,Studium
+Prüfungsvorbereitung,Azubis,88,compatible,Ausbildung
+Prüfungsvorbereitung,Schüler,86,compatible,Schulabschluss
+Gedächtnistraining,Senioren,88,compatible,Gehirntraining
+Sturzprävention,Senioren,90,compatible,Sicherheit
+Seniorengymnastik,Senioren,86,compatible,Bewegung
+Sturzprävention,Angehörige,84,compatible,Pflege
+Altersvorsorge,Berufstätige,82,compatible,Finanzen
+Altersvorsorge,Selbstständige,86,compatible,Rente
+Patientenverfügung,Angehörige,88,compatible,Vorsorge
+Vorsorgevollmacht,Angehörige,88,compatible,Vorsorge
+Testament,Angehörige,82,compatible,Nachlass
+Fotografie,Hobbyfotografen,88,compatible,Hobby
+Fotografie,Reisende,78,compatible,Reisefotografie
+Nähen,Hobbynäherinnen,88,compatible,Kreativ
+Stricken,Hobbystrickerinnen,84,compatible,Handarbeit
+Malen,Hobbymaler,82,compatible,Kunst
+Zeichnen,Hobbyzeichner,82,compatible,Kunst
+Garten,Hobbygärtner,88,compatible,Garten
+Garten,Hausbesitzer,84,compatible,Gartenarbeit
+Balkongarten,Stadtbewohner,86,compatible,Urban Gardening
+Gemüsegarten,Hobbygärtner,85,compatible,Selbstversorgung
+Kochen,Hobbyköche,86,compatible,Küche
+Backen,Hobbybäcker,84,compatible,Backstube
+Brot backen,Hobbybäcker,86,compatible,Brot
+Grillen,Hobbygriller,80,compatible,Grillsaison
+Camping,Camper,88,compatible,Outdoor
+Camping,Familien,84,compatible,Familienurlaub
+Wandern,Naturfreunde,86,compatible,Outdoor
+Angeln,Angler,88,compatible,Angelverein
+Radfahren,Radfahrer,84,compatible,Fahrrad
+Radfahren,Pendler,82,compatible,Arbeitsweg
+Laufen,Läufer,86,compatible,Joggen
+Yoga,Sportler,82,compatible,Beweglichkeit
+Yoga,Berufstätige,80,compatible,Stressabbau
+Fitness,Sportler,84,compatible,Training
+Krafttraining,Sportler,84,compatible,Muskelaufbau
+Pilates,Sportler,76,compatible,Beweglichkeit

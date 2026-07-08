@@ -15,3 +15,27 @@ mit Checklisten,context,82,allgemein
 für die Prüfungsvorbereitung,context,80,lernen
 für zu Hause,context,74,allgemein
 für unterwegs,context,70,allgemein
+für das Homeoffice,context,78,arbeit
+für das Büro,context,74,arbeit
+für die Baustelle,context,66,arbeit
+für den Pflegealltag,context,80,pflege
+für die Nachtschicht,context,72,arbeit
+für die Prüfung,context,84,lernen
+für den Schulalltag,context,76,lernen
+für den Urlaub,context,68,allgemein
+für den Notfall,context,78,allgemein
+für die Steuererklärung,context,76,business
+für den Behördengang,context,74,allgemein
+für den Arztbesuch,context,76,gesundheit
+in der Schwangerschaft,context,80,familie
+nach der Geburt,context,78,familie
+in der Pubertät,context,74,familie
+im Alter,context,78,senioren
+nach der Diagnose,context,72,gesundheit
+vor der Prüfung,context,82,lernen
+zum Berufseinstieg,context,76,arbeit
+zur Existenzgründung,context,74,business
+für die Therapie,context,70,gesundheit
+in den Wechseljahren,context,72,gesundheit
+während der Reha,context,70,gesundheit
+für die Reise,context,66,allgemein

@@ -365,3 +365,52 @@ def classify_risk(phrase: str, topic: str | None = None) -> tuple[str, list[str]
         reason_codes.append("no_risk_detected")
 
     return (risk_category, reason_codes, manual_review_required)
+
+
+# ── Dynamic CSV loader ─────────────────────────────────────────────────
+def load_compatibility_from_csvs() -> dict:
+    """Load compatibility data from CSV files into the engine at startup."""
+    import csv
+    from pathlib import Path
+
+    csv_dir = Path(__file__).resolve().parents[4] / "data" / "discovery_seed_universes" / "compatibility"
+    results = {"compat_loaded": 0, "incompat_loaded": 0, "risk_loaded": 0}
+
+    compat_file = csv_dir / "topic_audience_compatibility.csv"
+    if compat_file.exists():
+        with open(compat_file, encoding="utf-8-sig") as f:
+            for row in csv.DictReader(f):
+                topic = (row.get("topic") or "").strip().casefold()
+                audience = (row.get("audience") or "").strip().casefold()
+                if topic and audience:
+                    DOMAIN_AUDIENCE_COMPATIBILITY.setdefault(topic, [])
+                    if audience not in DOMAIN_AUDIENCE_COMPATIBILITY[topic]:
+                        DOMAIN_AUDIENCE_COMPATIBILITY[topic].append(audience)
+                    results["compat_loaded"] += 1
+
+    incompat_file = csv_dir / "incompatible_combinations.csv"
+    if incompat_file.exists():
+        with open(incompat_file, encoding="utf-8-sig") as f:
+            for row in csv.DictReader(f):
+                topic = (row.get("topic") or "").strip().casefold()
+                audience = (row.get("audience") or "").strip().casefold()
+                if topic and audience:
+                    INCOMPATIBLE_COMBINATIONS.add((topic, audience))
+                    results["incompat_loaded"] += 1
+
+    risk_file = csv_dir / "risk_rules.csv"
+    if risk_file.exists():
+        with open(risk_file, encoding="utf-8-sig") as f:
+            for row in csv.DictReader(f):
+                keyword = (row.get("keyword") or "").strip().casefold()
+                risk = (row.get("risk_category") or "").strip()
+                if keyword and risk:
+                    if risk == "blocked":
+                        BLOCKED_WORDS.add(keyword)
+                    elif risk == "restricted":
+                        BLOCKED_WORDS.add(keyword)
+                    elif risk == "high":
+                        HEALTH_RISK_WORDS.add(keyword)
+                    results["risk_loaded"] += 1
+
+    return results

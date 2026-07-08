@@ -30,3 +30,73 @@ rendite,high,financial_sensitive,False
 beschaffung,blocked,illegal_content,False
 darknet,blocked,illegal_content,False
 steuerhinterziehung,blocked,illegal_content,False
+medikament,high,health_sensitive,False
+diagnose,high,health_sensitive,False
+symptom,high,health_sensitive,False
+erkrankung,high,health_sensitive,False
+krankheit,high,health_sensitive,False
+heilung,high,health_sensitive,False
+medizinisch,high,health_sensitive,False
+psychisch,high,health_sensitive,False
+psychologie,high,health_sensitive,False
+selbsthilfe,medium,health_adjacent,True
+angststörung,high,health_sensitive,False
+panikattacke,high,health_sensitive,False
+trauma,high,health_sensitive,False
+sucht,high,health_sensitive,False
+alkohol,high,health_sensitive,False
+nikotin,high,health_sensitive,False
+abnehmen,medium,health_adjacent,True
+diät,medium,health_adjacent,True
+kalorien,medium,health_adjacent,True
+gesetz,high,legal_sensitive,False
+vertrag,high,legal_sensitive,False
+klage,high,legal_sensitive,False
+gericht,high,legal_sensitive,False
+anwalt,high,legal_sensitive,False
+haftung,high,legal_sensitive,False
+strafrecht,high,legal_sensitive,False
+urteil,high,legal_sensitive,False
+einklagen,high,legal_sensitive,False
+investment,high,financial_sensitive,False
+aktien,high,financial_sensitive,False
+trading,high,financial_sensitive,False
+krypto,high,financial_sensitive,False
+bitcoin,high,financial_sensitive,False
+geldanlage,high,financial_sensitive,False
+rendite,high,financial_sensitive,False
+reich werden,high,financial_sensitive,False
+passives einkommen,medium,financial_sensitive,True
+finanzielle freiheit,medium,financial_sensitive,True
+versicherung,medium,financial_sensitive,True
+kredit,medium,financial_sensitive,True
+schulden,medium,financial_sensitive,True
+insolvenz,medium,financial_sensitive,True
+scheidung,medium,legal_sensitive,True
+sorgerecht,high,legal_sensitive,False
+unterhalt,medium,legal_sensitive,True
+erbrecht,high,legal_sensitive,False
+arbeitsrecht,high,legal_sensitive,False
+mietrecht,high,legal_sensitive,False
+impfung,high,health_sensitive,False
+impfen,high,health_sensitive,False
+allergie,medium,health_adjacent,True
+unverträglichkeit,medium,health_adjacent,True
+intoleranz,medium,health_adjacent,True
+neurofeedback,high,health_sensitive,False
+homöopathie,medium,health_adjacent,True
+alternativmedizin,medium,health_adjacent,True
+naturheilkunde,medium,health_adjacent,True
+energieheilung,medium,health_adjacent,True
+esoterik,medium,health_adjacent,True
+wunderheilung,restricted,unsubstantiated_claims,False
+garantiert,medium,outcome_claim,True
+garantie,medium,outcome_claim,True
+100 prozent,medium,outcome_claim,True
+sicher erfolg,medium,outcome_claim,True
+garantiert heilen,restricted,unsubstantiated_claims,False
+schnell reich,restricted,unsubstantiated_claims,False
+passiv geld,medium,financial_sensitive,True
+nebenbei geld,medium,financial_sensitive,True
+beschaffung,blocked,illegal_content,False
+darknet,blocked,illegal_content,False
