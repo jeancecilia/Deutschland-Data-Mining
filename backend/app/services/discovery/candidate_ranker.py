@@ -340,7 +340,7 @@ def rank_candidates_for_validation(
             nat * 0.15 + spec * 0.20 + intent * 0.15 +
             dom_fit * 0.10 + fmt_fit * 0.10 - dup * 0.10 +
             aud_fit * 0.10 + fmt_style * 0.10 +
-            compound_boost * 0.12 + generic_penalty * 0.20
+            compound_boost * 0.12 + generic_penalty * 0.10
         )
         pre_val = max(0, min(100, pre_val))
         all_scores.append(pre_val)
