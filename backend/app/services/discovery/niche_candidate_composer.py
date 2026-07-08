@@ -81,10 +81,7 @@ def compose_niche_candidates(
         adjacency.setdefault(rel.target_entity_id, []).append((source, reverse_type))
 
     # Load existing candidates for dedup
-    existing_names: set[str] = {
-        c.normalized_name
-        for c in db.scalars(select(NicheCandidate.normalized_name))
-    }
+    existing_names: set[str] = set(db.scalars(select(NicheCandidate.normalized_name)))
 
     created = 0
     skipped_no_relation = 0
