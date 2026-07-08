@@ -1,6 +1,8 @@
 """
-Candidate Promoter — promotes validated niche_candidates to the keywords table
-so the existing KDP pipeline can process them.
+Candidate Promoter v2 — manual review gate, respects auto_promote_allowed.
+
+Only promotes candidates with status='approved_for_promotion' (manual approval)
+or 'fast_validated' + auto_promote_allowed=True (if auto-promote enabled).
 """
 
 from __future__ import annotations
@@ -19,6 +21,8 @@ from app.services.keyword_intelligence import infer_keyword_intelligence
 class PromoteBatch:
     promoted: int
     skipped: int
+    skipped_auto_blocked: int
+    skipped_risk: int
     keywords: list[Keyword]
 
 
@@ -27,30 +31,58 @@ def promote_candidates_to_seeds(
     *,
     limit: int = 50,
     min_score: int = 50,
+    force: bool = False,
 ) -> PromoteBatch:
-    """Promote fast-validated niche candidates to seed keywords.
+    """Promote candidates to seed keywords — manual gate enforced.
 
-    Only promotes candidates with status='fast_validated' and
-    fast_validation_score >= min_score.
+    Without force=True:
+      Only promotes candidates with status='approved_for_promotion'.
+
+    With force=True (testing only):
+      Promotes candidates with status='fast_validated' + auto_promote_allowed=True.
     """
-    candidates = list(
-        db.scalars(
-            select(NicheCandidate)
-            .where(
-                NicheCandidate.status == "fast_validated",
-                NicheCandidate.fast_validation_score >= min_score,
+    if force:
+        candidates = list(
+            db.scalars(
+                select(NicheCandidate)
+                .where(
+                    NicheCandidate.status == "fast_validated",
+                    NicheCandidate.auto_promote_allowed == True,  # noqa: E712
+                    NicheCandidate.fast_validation_score >= min_score,
+                )
+                .order_by(NicheCandidate.fast_validation_score.desc())
+                .limit(limit)
             )
-            .order_by(NicheCandidate.fast_validation_score.desc())
-            .limit(limit)
         )
-    )
+    else:
+        # Manual approval gate — only promote approved candidates
+        candidates = list(
+            db.scalars(
+                select(NicheCandidate)
+                .where(NicheCandidate.status == "approved_for_promotion")
+                .order_by(NicheCandidate.fast_validation_score.desc().nullslast())
+                .limit(limit)
+            )
+        )
 
     promoted = 0
     skipped = 0
+    skipped_auto_blocked = 0
+    skipped_risk = 0
     result_keywords: list[Keyword] = []
 
     for candidate in candidates:
-        # Check if already promoted as keyword (by candidate name)
+        # Safety check: never promote blocked/restricted
+        if candidate.risk_category in ("blocked", "restricted"):
+            skipped_risk += 1
+            continue
+
+        # Safety check: high risk requires manual approval regardless
+        if candidate.risk_category == "high" and not force:
+            skipped_risk += 1
+            continue
+
+        # Check if already promoted
         existing_keyword = db.scalars(
             select(Keyword).where(
                 Keyword.source_niche_candidate_id == candidate.id,
@@ -60,12 +92,11 @@ def promote_candidates_to_seeds(
             skipped += 1
             continue
 
-        # Also check by phrase match
+        # Check phrase match
         phrase_matches = db.scalars(
             select(Keyword).where(Keyword.keyword == candidate.candidate_name)
         ).first()
         if phrase_matches is not None:
-            # Link existing keyword back to candidate
             phrase_matches.source_niche_candidate_id = candidate.id
             phrase_matches.discovery_origin_type = "initial_discovery"
             db.add(phrase_matches)
@@ -75,7 +106,6 @@ def promote_candidates_to_seeds(
             promoted += 1
             continue
 
-        # Infer intelligence for the new keyword
         intelligence = infer_keyword_intelligence(
             candidate.candidate_name,
             book_type=candidate.book_class_guess,
@@ -98,15 +128,15 @@ def promote_candidates_to_seeds(
             competition_probability_score=intelligence.competition_probability_score,
             production_effort_score=intelligence.production_effort_score,
             book_type=candidate.book_class_guess,
-            risk_level=candidate.risk_level or intelligence.risk_level,
+            risk_level=candidate.risk_category or intelligence.risk_level,
             status="discovered",
             priority=candidate.fast_validation_score or 60,
-            notes=f"Auto-promoted from discovery candidate #{candidate.id}: {candidate.candidate_name}",
+            notes=f"Discovery seed from candidate #{candidate.id}: {candidate.candidate_name}",
         )
         db.add(keyword)
         db.flush()
 
-        # Also generate keyword variants for the candidate
+        # Generate keyword variants
         variants = _generate_keyword_variants(candidate.candidate_name)
         for variant in variants:
             db.add(NicheCandidateKeyword(
@@ -118,7 +148,7 @@ def promote_candidates_to_seeds(
             ))
 
         candidate.status = "promoted_to_seed"
-        candidate.promotion_reason = f"Auto-promoted with score {candidate.fast_validation_score}"
+        candidate.promotion_reason = "Approved and promoted"
         db.add(candidate)
         result_keywords.append(keyword)
         promoted += 1
@@ -130,36 +160,21 @@ def promote_candidates_to_seeds(
     return PromoteBatch(
         promoted=promoted,
         skipped=skipped,
+        skipped_auto_blocked=skipped_auto_blocked,
+        skipped_risk=skipped_risk,
         keywords=result_keywords,
     )
 
 
 def _generate_keyword_variants(phrase: str) -> list[dict]:
-    """Generate keyword variants from a niche candidate phrase."""
     variants: list[dict] = []
     lowered = phrase.casefold()
-
-    # Primary (exact)
     variants.append({"text": phrase, "type": "primary", "confidence": 90})
-
-    # Lowercase variant
     if phrase != lowered:
         variants.append({"text": lowered, "type": "variant", "confidence": 85})
-
-    # Remove 'für' construction → compound
     if " für " in lowered:
         parts = lowered.split(" für ", 1)
-        compound = parts[0].strip() + " " + parts[1].strip()
-        variants.append({"text": compound, "type": "variant", "confidence": 70})
-
-        # Reversed: "audience topic"
-        reversed_phrase = parts[1].strip() + " " + parts[0].strip()
-        variants.append({"text": reversed_phrase, "type": "variant", "confidence": 65})
-
-    # Add "Buch" suffix
+        variants.append({"text": parts[0].strip() + " " + parts[1].strip(), "type": "variant", "confidence": 70})
     variants.append({"text": lowered + " buch", "type": "long_tail", "confidence": 60})
-
-    # Add "Ratgeber" suffix
     variants.append({"text": lowered + " ratgeber", "type": "long_tail", "confidence": 55})
-
-    return variants[:8]  # Limit to 8 variants
+    return variants[:8]

@@ -148,6 +148,16 @@ class NicheCandidateRead(BaseModel):
     fast_validation_score: int | None
     rejection_reason: str | None
     promotion_reason: str | None
+    # Quality hardening fields
+    risk_category: str | None = None
+    risk_reason_codes: list[str] | None = None
+    manual_review_required: bool = False
+    authority_required: bool = False
+    disclaimer_required: bool = False
+    auto_promote_allowed: bool = True
+    compatibility_score: int | None = None
+    suggested_rewrites: list[str] | None = None
+    recommendation_label: str | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -255,13 +255,13 @@ def fast_validate(
     db: Session = Depends(get_db),
 ) -> dict:
     results = validate_candidates_fast(db, limit=limit)
-    promoted = sum(1 for r in results if r.recommended_action == "promote_to_seed")
-    rejected = sum(1 for r in results if r.recommended_action == "reject")
-    manual = sum(1 for r in results if r.recommended_action == "manual_review")
+    go_count = sum(1 for r in results if r.recommendation_label == "GO")
+    blocked = sum(1 for r in results if r.recommendation_label in ("NO-GO", "BLOCKED"))
+    manual = sum(1 for r in results if r.recommendation_label in ("REVIEW_REQUIRED", "HIGH_RISK_OPPORTUNITY", "MAYBE"))
     return {
         "total": len(results),
-        "promoted": promoted,
-        "rejected": rejected,
+        "go": go_count,
+        "blocked": blocked,
         "manual_review": manual,
     }
 
@@ -284,16 +284,54 @@ def update_candidate(
     return NicheCandidateRead.model_validate(candidate)
 
 
+@router.post("/candidates/{candidate_id}/approve")
+def approve_candidate(
+    candidate_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Approve a candidate for promotion (manual review gate)."""
+    from app.models.discovery_pipeline import NicheCandidate
+    candidate = db.get(NicheCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    candidate.status = "approved_for_promotion"
+    candidate.promotion_reason = "Manually approved"
+    db.add(candidate)
+    db.commit()
+    return {"status": "ok", "candidate_id": candidate_id, "new_status": "approved_for_promotion"}
+
+
+@router.post("/candidates/{candidate_id}/reject")
+def reject_candidate(
+    candidate_id: int,
+    reason: str = Query(default="Manually rejected"),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Reject a candidate."""
+    from app.models.discovery_pipeline import NicheCandidate
+    candidate = db.get(NicheCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    candidate.status = "rejected"
+    candidate.rejection_reason = reason
+    db.add(candidate)
+    db.commit()
+    return {"status": "ok", "candidate_id": candidate_id, "new_status": "rejected"}
+
+
 @router.post("/candidates/promote")
 def promote_candidates(
     limit: int = Query(default=50, ge=1, le=200),
     min_score: int = Query(default=50, ge=0, le=100),
+    force: bool = Query(default=False),
     db: Session = Depends(get_db),
 ) -> dict:
-    batch = promote_candidates_to_seeds(db, limit=limit, min_score=min_score)
+    batch = promote_candidates_to_seeds(db, limit=limit, min_score=min_score, force=force)
     return {
         "promoted": batch.promoted,
         "skipped": batch.skipped,
+        "skipped_auto_blocked": batch.skipped_auto_blocked,
+        "skipped_risk": batch.skipped_risk,
         "keyword_ids": [kw.id for kw in batch.keywords],
     }
 

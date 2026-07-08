@@ -208,6 +208,16 @@ class NicheCandidate(Base, TimestampMixin):
     fast_validation_score: Mapped[int | None] = mapped_column(Integer)
     rejection_reason: Mapped[str | None] = mapped_column(Text)
     promotion_reason: Mapped[str | None] = mapped_column(Text)
+    # ── Quality hardening fields ──────────────────────────────────
+    risk_category: Mapped[str | None] = mapped_column(String(50), comment="low, medium, high, restricted, blocked")
+    risk_reason_codes: Mapped[dict | None] = mapped_column(JSONB)
+    manual_review_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    authority_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    disclaimer_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    auto_promote_allowed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    compatibility_score: Mapped[int | None] = mapped_column(Integer)
+    suggested_rewrites: Mapped[dict | None] = mapped_column(JSONB)
+    recommendation_label: Mapped[str | None] = mapped_column(String(50), comment="GO, MAYBE, NO-GO, REVIEW_REQUIRED, HIGH_RISK_OPPORTUNITY, BLOCKED")
 
 
 # ── niche_candidate_keywords ───────────────────────────────────────────────

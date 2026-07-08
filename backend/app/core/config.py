@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     amazon_browser_locale: str = "de-DE"
     amazon_browser_timezone_id: str = "Europe/Berlin"
     amazon_browser_storage_state_path: str = "/app/generated_reports/amazon-storage-state.json"
+    discovery_auto_promote_enabled: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
