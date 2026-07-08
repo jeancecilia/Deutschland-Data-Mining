@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain
+Schüler,audience,80,bildung
+Studenten,audience,82,bildung
+Studierende,audience,82,bildung
+Azubis,audience,76,bildung
+Lehrer,audience,78,bildung
+Erwachsene mit ADHS,audience,92,gesundheit
+Menschen mit ADHS,audience,88,gesundheit
+Schichtarbeiter,audience,78,arbeit
+Menschen mit Schichtarbeit,audience,76,arbeit

@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain
+Friseur,profession,70,dienstleistung
+Kosmetiker,profession,66,dienstleistung
+Koch,profession,76,gastronomie
+Gastronom,profession,68,gastronomie
+Verkäufer,profession,64,handel
+Einzelhandelskaufmann,profession,64,handel
+Busfahrer,profession,64,transport
+LKW-Fahrer,profession,68,transport
+Berufskraftfahrer,profession,68,transport

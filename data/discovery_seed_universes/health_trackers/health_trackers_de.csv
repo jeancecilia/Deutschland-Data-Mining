@@ -1,0 +1,15 @@
+﻿name,entity_type,priority,domain,risk_level
+Blutdrucktagebuch,topic,93,gesundheit,high
+Blutzuckertagebuch,topic,88,gesundheit,high
+Schlaftagebuch,topic,82,gesundheit,medium
+Schmerztagebuch,topic,80,gesundheit,high
+Migräne Tagebuch,topic,78,gesundheit,high
+Symptomtagebuch,topic,76,gesundheit,high
+Medikamentenplan,topic,86,gesundheit,high
+Arztbesuch Notizbuch,topic,80,gesundheit,medium
+Stimmungstagebuch,topic,78,gesundheit,high
+ADHS Tagesplaner,topic,88,gesundheit,high
+Ernährungstagebuch,topic,82,gesundheit,medium
+Fitness Tagebuch,topic,76,gesundheit,low
+Gewichtstagebuch,topic,74,gesundheit,medium
+Zyklustagebuch,topic,72,gesundheit,medium

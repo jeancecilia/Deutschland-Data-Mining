@@ -1,0 +1,11 @@
+﻿name,entity_type,priority,domain
+Anfänger,audience,88,allgemein
+Einsteiger,audience,86,allgemein
+Fortgeschrittene,audience,70,allgemein
+Erwachsene,audience,80,allgemein
+Frauen,audience,75,allgemein
+Männer,audience,72,allgemein
+Berufstätige,audience,82,arbeit
+Vielbeschäftigte,audience,74,allgemein
+Singles,audience,68,allgemein
+Paare,audience,70,allgemein

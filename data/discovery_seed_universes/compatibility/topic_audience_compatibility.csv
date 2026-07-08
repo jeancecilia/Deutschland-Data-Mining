@@ -1,0 +1,54 @@
+﻿topic,audience,confidence,relation_type,notes
+KI im Handwerk,Handwerker,95,compatible,direkte Zielgruppe
+KI im Handwerk,Kleinunternehmer,90,compatible,kleine Betriebe
+KI im Handwerk,Selbstständige,88,compatible,Business-Thema
+Pflegegrad,Senioren,95,compatible,direkter Use Case
+Pflegegrad,Angehörige,95,compatible,Angehörige beantragen
+Pflegegrad,Rentner,92,compatible,häufiger Use Case
+Pflegeantrag,Senioren,95,compatible,direkter Use Case
+Pflegeantrag,Angehörige,95,compatible,Angehörige stellen Antrag
+Pflege,Pflegekräfte,95,compatible,direkte Zielgruppe
+Pflege,Angehörige,95,compatible,pflegende Angehörige
+ADHS,Erwachsene mit ADHS,95,compatible,direkte Zielgruppe
+ADHS,Eltern,90,compatible,Eltern von ADHS-Kindern
+Hundetraining,Hundehalter,95,compatible,direkte Zielgruppe
+Welpentraining,Hundehalter,95,compatible,neue Hundehalter
+Buchhaltung,Selbstständige,95,compatible,Pflichtthema
+Buchhaltung,Kleinunternehmer,95,compatible,Pflichtthema
+Buchhaltung,Freelancer,95,compatible,Pflichtthema
+Steuererklärung,Selbstständige,95,compatible,Pflichtthema
+Steuererklärung,Freelancer,92,compatible,Pflichtthema
+Steuererklärung,Rentner,88,compatible,Rentner mit Einkünften
+Demenz,Senioren,95,compatible,direkte Zielgruppe
+Demenz,Angehörige,95,compatible,pflegende Angehörige
+Blutdruck,Senioren,95,compatible,häufigstes Tracking-Thema
+Blutzucker,Senioren,88,compatible,Diabetes-Management
+Blutdrucktagebuch,Senioren,95,compatible,direkter Use Case
+Blutdrucktagebuch,Angehörige,90,compatible,Hilfe beim Tracken
+Essensplan,Familien,90,compatible,Familienorganisation
+Essensplan,Berufstätige,88,compatible,Meal Prep
+Haushaltsbuch,Familien,88,compatible,Budgetplanung
+Haushaltsbuch,Singles,82,compatible,persönliche Finanzen
+Babyschlaf,Eltern,95,compatible,direkter Use Case
+Babyschlaf,Mütter,92,compatible,häufige Zielgruppe
+Rente beantragen,Rentner,95,compatible,direkter Use Case
+Rente beantragen,Ruheständler,95,compatible,direkter Use Case
+Patientenverfügung,Senioren,95,compatible,Vorsorgethema
+Patientenverfügung,Angehörige,88,compatible,rechtliche Vorsorge
+Testament,Senioren,90,compatible,Vorsorgethema
+Sturzprävention,Senioren,90,compatible,Gesundheitsthema
+Balkongarten,Anfänger,88,compatible,Einsteiger-Thema
+Kochen,Anfänger,90,compatible,Lernthema
+Kochen,Studenten,88,compatible,erste eigene Küche
+Yoga,Anfänger,88,compatible,Einsteiger-Thema
+Yoga,Frauen,85,compatible,starke Zielgruppe
+Fotografie,Anfänger,88,compatible,Einsteiger-Thema
+Nähen,Anfänger,86,compatible,Einsteiger-Thema
+Garten,Anfänger,86,compatible,Einsteiger-Thema
+Medikamentenplan,Senioren,92,compatible,Gesundheitsmanagement
+Medikamentenplan,Angehörige,88,compatible,Hilfe bei Verwaltung
+ADHS Tagesplaner,Erwachsene mit ADHS,95,compatible,direktes Hilfsmittel
+Lernorganisation,Studenten,92,compatible,Lernhilfe
+Lernorganisation,Schüler,88,compatible,Lernhilfe
+Prüfungsvorbereitung,Studenten,92,compatible,Lernhilfe
+Prüfungsvorbereitung,Azubis,88,compatible,Ausbildungsprüfung

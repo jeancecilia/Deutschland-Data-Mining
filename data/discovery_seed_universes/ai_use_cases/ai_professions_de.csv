@@ -1,0 +1,14 @@
+﻿name,entity_type,priority,domain
+KI für Handwerker,topic,88,ki
+KI für Lehrer,topic,82,ki
+KI für Pflegekräfte,topic,80,ki
+KI für Immobilienmakler,topic,78,ki
+KI für Coaches,topic,76,ki
+KI für Friseure,topic,74,ki
+KI für Gastronomen,topic,72,ki
+KI für Steuerberater,topic,76,ki
+ChatGPT für Selbstständige,topic,84,ki
+ChatGPT für Senioren,topic,80,ki
+ChatGPT für Bewerbungen,topic,76,ki
+KI für E-Mails,topic,72,ki
+KI für Social Media,topic,74,ki

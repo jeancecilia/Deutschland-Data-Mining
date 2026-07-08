@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain
+Garten,hobby,86,garten
+Balkongarten,hobby,82,garten
+Gemüsegarten,hobby,80,garten
+Kräutergarten,hobby,78,garten
+Zimmerpflanzen,hobby,74,garten
+Hochbeet,hobby,76,garten

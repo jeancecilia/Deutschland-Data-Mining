@@ -1,0 +1,9 @@
+﻿name,entity_type,priority,domain
+Buchhaltung,topic,84,business
+Steuererklärung,topic,82,business
+Umsatzsteuer,topic,76,business
+EÜR,topic,74,business
+Rechnung schreiben,topic,78,business
+Angebote schreiben,topic,74,business
+Preiskalkulation,topic,72,business
+Steuerunterlagen sortieren,topic,76,business

@@ -1,0 +1,6 @@
+﻿name,entity_type,priority,domain
+Abitur,exam,90,schule
+Fachabitur,exam,85,schule
+Mittlere Reife,exam,82,schule
+Hauptschulabschluss,exam,78,schule
+Qualifizierender Hauptschulabschluss,exam,76,schule

@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain
+Hund zieht an der Leine,problem,88,haustiere
+Hund bleibt nicht alleine,problem,86,haustiere
+Welpe stubenrein,problem,84,haustiere
+Angsthund,problem,82,haustiere
+Hundebegegnungen,problem,78,haustiere
+Rückruftraining,problem,85,haustiere
+Katzen Eingewöhnung,problem,74,haustiere

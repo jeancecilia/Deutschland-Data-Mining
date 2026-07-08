@@ -1,0 +1,17 @@
+﻿name,entity_type,priority,domain
+im Alltag,context,84,allgemein
+für Anfänger,context,86,allgemein
+für Einsteiger,context,86,allgemein
+im Berufsalltag,context,80,arbeit
+im Familienalltag,context,82,familie
+bei Schichtarbeit,context,72,arbeit
+für Senioren,context,82,senioren
+für Selbstständige,context,80,business
+ohne Vorkenntnisse,context,78,allgemein
+mit wenig Zeit,context,76,allgemein
+mit klarer Struktur,context,80,allgemein
+mit Vorlagen,context,78,allgemein
+mit Checklisten,context,82,allgemein
+für die Prüfungsvorbereitung,context,80,lernen
+für zu Hause,context,74,allgemein
+für unterwegs,context,70,allgemein

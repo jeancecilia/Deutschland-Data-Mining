@@ -1,0 +1,13 @@
+﻿name,entity_type,priority,domain
+Pflegegrad,topic,90,senioren
+Pflegeantrag,topic,88,senioren
+Pflegeorganisation,topic,86,senioren
+Pflegedokumentation,topic,84,senioren
+Demenz,topic,88,senioren
+Sturzprävention,topic,80,senioren
+Seniorengymnastik,topic,76,senioren
+Rente beantragen,topic,82,senioren
+Altersvorsorge,topic,80,senioren
+Patientenverfügung,topic,84,senioren
+Vorsorgevollmacht,topic,82,senioren
+Testament,topic,80,senioren

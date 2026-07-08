@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain
+Einbürgerungstest,exam,92,sprache
+Deutsch B1,exam,88,sprache
+Deutsch B2,exam,86,sprache
+Deutsch C1,exam,84,sprache
+telc Deutsch,exam,80,sprache
+Goethe-Zertifikat,exam,78,sprache

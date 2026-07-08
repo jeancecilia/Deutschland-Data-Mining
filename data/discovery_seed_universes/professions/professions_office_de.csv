@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain
+Bürokaufmann,profession,74,buero
+Industriekaufmann,profession,72,buero
+Fachinformatiker,profession,92,it
+Softwareentwickler,profession,90,it
+IT-Administrator,profession,85,it
+Steuerberater,profession,80,finanzen
+Rechtsanwalt,profession,76,recht
+Immobilienmakler,profession,72,immobilien
+Versicherungsmakler,profession,68,finanzen

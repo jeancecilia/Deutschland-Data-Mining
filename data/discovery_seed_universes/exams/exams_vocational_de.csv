@@ -1,0 +1,11 @@
+﻿name,entity_type,priority,domain
+IHK-Prüfung,exam,95,beruf
+IHK Abschlussprüfung,exam,94,beruf
+IHK Zwischenprüfung,exam,88,beruf
+Ausbildereignungsprüfung,exam,85,beruf
+Meisterprüfung,exam,90,handwerk
+Fachwirtprüfung,exam,82,beruf
+Betriebswirt IHK,exam,80,beruf
+Sachkundeprüfung,exam,78,beruf
+Pflegeexamen,exam,86,pflege
+Fachinformatiker Prüfung,exam,88,it

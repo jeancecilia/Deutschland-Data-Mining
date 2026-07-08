@@ -1,0 +1,12 @@
+﻿name,entity_type,priority,domain
+Camping,hobby,78,outdoor
+Wandern,hobby,82,outdoor
+Angeln,hobby,74,outdoor
+Radfahren,hobby,76,sport
+Laufen,hobby,78,sport
+Klettern,hobby,68,sport
+Yoga,hobby,84,sport
+Krafttraining,hobby,78,sport
+Fitness,hobby,82,sport
+Pilates,hobby,72,sport
+Tanzen,hobby,70,sport

@@ -1,0 +1,13 @@
+﻿name,entity_type,priority,domain
+Pflegefachfrau,profession,96,pflege
+Pflegefachmann,profession,96,pflege
+Krankenpfleger,profession,95,pflege
+Krankenschwester,profession,95,pflege
+Altenpfleger,profession,94,pflege
+Arzt,profession,90,medizin
+Zahnarzt,profession,85,medizin
+Physiotherapeut,profession,84,medizin
+Ergotherapeut,profession,80,medizin
+Hebamme,profession,88,medizin
+Notfallsanitäter,profession,86,medizin
+Apotheker,profession,82,medizin

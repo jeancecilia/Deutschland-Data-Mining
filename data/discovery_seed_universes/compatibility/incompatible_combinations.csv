@@ -1,0 +1,40 @@
+﻿topic,audience,reason,severity
+KI im Handwerk,Pflege,domain_mismatch,hard_block
+KI im Handwerk,Pflegekräfte,domain_mismatch,hard_block
+KI im Handwerk,Rentner,domain_mismatch,hard_block
+KI im Handwerk,Ruheständler,domain_mismatch,hard_block
+KI im Handwerk,Senioren,domain_mismatch,hard_block
+KI im Handwerk,Angehörige,domain_mismatch,hard_block
+Pflegegrad,Kleinunternehmer,domain_mismatch,hard_block
+Pflegegrad,Selbstständige,domain_mismatch,hard_block
+Pflegegrad,Freelancer,domain_mismatch,hard_block
+Pflegegrad,Handwerker,domain_mismatch,hard_block
+Pflegeantrag,Kleinunternehmer,domain_mismatch,hard_block
+Pflegeantrag,Freelancer,domain_mismatch,hard_block
+Pflegebedürftigkeit,Freelancer,domain_mismatch,hard_block
+Pflegebedürftigkeit,Kleinunternehmer,domain_mismatch,hard_block
+Alleinerziehend,Ruheständler,life_stage_mismatch,hard_block
+Alleinerziehend,Rentner,life_stage_mismatch,hard_block
+Alleinerziehend,Freelancer,life_stage_mismatch,hard_block
+Eltern,Pflege,audience_as_topic,hard_block
+Eltern,Ruheständler,life_stage_mismatch,hard_block
+Eltern,Rentner,life_stage_mismatch,hard_block
+Eltern,Freelancer,audience_as_topic,hard_block
+Eltern,Kleinunternehmer,audience_as_topic,hard_block
+Babyschlaf,Senioren,life_stage_mismatch,hard_block
+Babyschlaf,Rentner,life_stage_mismatch,hard_block
+Welpentraining,Senioren,domain_mismatch,hard_block
+Rente beantragen,Studenten,life_stage_mismatch,hard_block
+Rente beantragen,Freelancer,life_stage_mismatch,hard_block
+Existenzgründung,Rentner,life_stage_mismatch,hard_block
+Existenzgründung,Ruheständler,life_stage_mismatch,hard_block
+Hundetraining,Kleinunternehmer,domain_mismatch,hard_block
+Hundetraining,Freelancer,domain_mismatch,hard_block
+Buchhaltung,Senioren,domain_mismatch,hard_block
+Buchhaltung,Pflegekräfte,domain_mismatch,hard_block
+Steuererklärung,Pflegekräfte,domain_mismatch,hard_block
+Steuererklärung,Schüler,domain_mismatch,hard_block
+Haushaltsbuch,Kinder,domain_mismatch,hard_block
+Medikamentenplan,Studenten,domain_mismatch,hard_block
+Patientenverfügung,Studenten,life_stage_mismatch,hard_block
+Patientenverfügung,Kinder,life_stage_mismatch,hard_block

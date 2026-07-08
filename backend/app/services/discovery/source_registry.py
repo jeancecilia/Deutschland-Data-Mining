@@ -22,6 +22,7 @@ from app.models.discovery_pipeline import DiscoverySource, RawDiscoveryItem
 SEED_UNIVERSE_DIR = Path(__file__).resolve().parents[4] / "data" / "discovery_seed_universes"
 
 SEED_UNIVERSE_MANIFEST: list[dict[str, str]] = [
+    # Legacy root-level files
     {"filename": "professions_de.csv", "source_type": "profession_list", "source_name": "Berufsliste DE"},
     {"filename": "exams_de.csv", "source_type": "exam_list", "source_name": "Prüfungen DE"},
     {"filename": "life_events_de.csv", "source_type": "life_event_list", "source_name": "Lebensereignisse DE"},
@@ -30,6 +31,42 @@ SEED_UNIVERSE_MANIFEST: list[dict[str, str]] = [
     {"filename": "senior_topics_de.csv", "source_type": "public_list", "source_name": "Seniorenthemen DE"},
     {"filename": "business_topics_de.csv", "source_type": "public_list", "source_name": "Selbstständigkeit DE"},
     {"filename": "ai_use_cases_de.csv", "source_type": "public_list", "source_name": "KI-Anwendungsfälle DE"},
+    # New subdirectory files — each gets its own source_type
+    {"filename": "audiences/audiences_general_de.csv", "source_type": "audience_list", "source_name": "Zielgruppen Allgemein"},
+    {"filename": "audiences/audiences_senior_de.csv", "source_type": "audience_list", "source_name": "Zielgruppen Senioren"},
+    {"filename": "audiences/audiences_family_de.csv", "source_type": "audience_list", "source_name": "Zielgruppen Familie"},
+    {"filename": "audiences/audiences_business_de.csv", "source_type": "audience_list", "source_name": "Zielgruppen Business"},
+    {"filename": "audiences/audiences_learning_de.csv", "source_type": "audience_list", "source_name": "Zielgruppen Lernen"},
+    {"filename": "professions/professions_health_de.csv", "source_type": "profession_list", "source_name": "Gesundheitsberufe"},
+    {"filename": "professions/professions_craft_de.csv", "source_type": "profession_list", "source_name": "Handwerksberufe"},
+    {"filename": "professions/professions_office_de.csv", "source_type": "profession_list", "source_name": "Büroberufe"},
+    {"filename": "professions/professions_service_de.csv", "source_type": "profession_list", "source_name": "Dienstleistungsberufe"},
+    {"filename": "professions/professions_education_de.csv", "source_type": "profession_list", "source_name": "Bildungsberufe"},
+    {"filename": "exams/exams_school_de.csv", "source_type": "exam_list", "source_name": "Schulabschlüsse"},
+    {"filename": "exams/exams_vocational_de.csv", "source_type": "exam_list", "source_name": "Berufsprüfungen"},
+    {"filename": "exams/exams_language_de.csv", "source_type": "exam_list", "source_name": "Sprachprüfungen"},
+    {"filename": "exams/exams_licenses_de.csv", "source_type": "exam_list", "source_name": "Lizenzen"},
+    {"filename": "problems/problems_organization_de.csv", "source_type": "problem_list", "source_name": "Organisationsprobleme"},
+    {"filename": "problems/problems_learning_de.csv", "source_type": "problem_list", "source_name": "Lernprobleme"},
+    {"filename": "problems/problems_health_de.csv", "source_type": "problem_list", "source_name": "Gesundheitsprobleme"},
+    {"filename": "problems/problems_work_de.csv", "source_type": "problem_list", "source_name": "Arbeitsprobleme"},
+    {"filename": "problems/problems_pets_de.csv", "source_type": "problem_list", "source_name": "Haustierprobleme"},
+    {"filename": "health_trackers/health_trackers_de.csv", "source_type": "public_list", "source_name": "Gesundheitstracker"},
+    {"filename": "business/business_basics_de.csv", "source_type": "public_list", "source_name": "Business Basics"},
+    {"filename": "business/business_admin_de.csv", "source_type": "public_list", "source_name": "Business Admin"},
+    {"filename": "ai_use_cases/ai_professions_de.csv", "source_type": "public_list", "source_name": "KI Berufe"},
+    {"filename": "household/household_organization_de.csv", "source_type": "public_list", "source_name": "Haushaltsorganisation"},
+    {"filename": "pets/pets_dogs_de.csv", "source_type": "hobby_list", "source_name": "Hunde"},
+    {"filename": "pets/pets_cats_de.csv", "source_type": "hobby_list", "source_name": "Katzen"},
+    {"filename": "hobbies/hobbies_creative_de.csv", "source_type": "hobby_list", "source_name": "Kreative Hobbys"},
+    {"filename": "hobbies/hobbies_food_de.csv", "source_type": "hobby_list", "source_name": "Essen & Trinken"},
+    {"filename": "hobbies/hobbies_outdoor_de.csv", "source_type": "hobby_list", "source_name": "Outdoor & Sport"},
+    {"filename": "hobbies/hobbies_garden_de.csv", "source_type": "hobby_list", "source_name": "Garten"},
+    {"filename": "learning/learning_topics_de.csv", "source_type": "public_list", "source_name": "Lernthemen"},
+    {"filename": "seniors/senior_topics_de.csv", "source_type": "public_list", "source_name": "Seniorenthemen DE"},
+    {"filename": "family/family_topics_de.csv", "source_type": "public_list", "source_name": "Familienthemen DE"},
+    {"filename": "formats/book_formats_de.csv", "source_type": "public_list", "source_name": "Buchformate"},
+    {"filename": "contexts/contexts_de.csv", "source_type": "public_list", "source_name": "Kontexte"},
 ]
 
 DEFAULT_SOURCES: list[dict[str, object]] = [

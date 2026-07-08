@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain
+Selbstständige,audience,95,business
+Freelancer,audience,88,business
+Kleinunternehmer,audience,86,business
+Gründer,audience,84,business
+Solo-Selbstständige,audience,84,business
+Handwerker,audience,88,handwerk
+Kleine Betriebe,audience,82,business
+Startups,audience,70,business
+Nebengewerbler,audience,78,business

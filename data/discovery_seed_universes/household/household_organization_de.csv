@@ -1,0 +1,13 @@
+﻿name,entity_type,priority,domain
+Haushaltsbuch,topic,84,haushalt
+Putzplan,topic,78,haushalt
+Essensplan,topic,82,haushalt
+Wochenplaner,topic,80,haushalt
+Familienkalender,topic,76,haushalt
+Notfallordner,topic,82,haushalt
+Dokumentenmappe,topic,80,haushalt
+Behördenpost organisieren,topic,84,haushalt
+Passwörter organisieren,topic,72,haushalt
+Digitale Ordnung,topic,74,haushalt
+Minimalismus,topic,76,haushalt
+Aufräumen,topic,78,haushalt

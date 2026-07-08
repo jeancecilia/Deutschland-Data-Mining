@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain
+Senioren,audience,95,senioren
+Rentner,audience,90,senioren
+Ruheständler,audience,88,senioren
+Menschen ab 60,audience,80,senioren
+Menschen ab 70,audience,75,senioren
+Pflegebedürftige,audience,90,pflege
+Angehörige,audience,96,pflege
+Pflegende Angehörige,audience,95,pflege
+Pflegekräfte,audience,90,pflege

@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain
+Lernorganisation,topic,84,lernen
+Prüfungsvorbereitung,topic,86,lernen
+Lernplan,topic,80,lernen
+Gedächtnistraining,topic,78,lernen
+Lesetechniken,topic,70,lernen
+Notizen machen,topic,72,lernen

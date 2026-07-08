@@ -1,0 +1,7 @@
+﻿name,entity_type,priority,domain
+Führerschein Klasse B,exam,82,lizenz
+Führerschein Theorie,exam,84,lizenz
+LKW-Führerschein,exam,72,lizenz
+Jagdprüfung,exam,64,lizenz
+Sportbootführerschein,exam,62,lizenz
+Hundeführerschein,exam,66,lizenz

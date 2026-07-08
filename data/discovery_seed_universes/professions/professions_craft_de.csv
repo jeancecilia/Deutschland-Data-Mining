@@ -1,0 +1,12 @@
+﻿name,entity_type,priority,domain
+Handwerker,profession,88,handwerk
+Elektriker,profession,82,handwerk
+Tischler,profession,78,handwerk
+Maler,profession,74,handwerk
+Installateur,profession,76,handwerk
+Dachdecker,profession,72,handwerk
+Maurer,profession,70,handwerk
+Fliesenleger,profession,68,handwerk
+Zimmerer,profession,70,handwerk
+Kfz-Mechatroniker,profession,78,handwerk
+Mechatroniker,profession,80,handwerk

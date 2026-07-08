@@ -1,0 +1,10 @@
+﻿name,entity_type,priority,domain
+Eltern,audience,92,familie
+Mütter,audience,88,familie
+Väter,audience,85,familie
+Alleinerziehende,audience,90,familie
+Familien,audience,88,familie
+Kinder,audience,82,familie
+Großeltern,audience,76,familie
+Patchworkfamilien,audience,74,familie
+Jugendliche,audience,70,familie

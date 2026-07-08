@@ -1,0 +1,8 @@
+﻿name,entity_type,priority,domain
+Schlafprobleme,problem,86,gesundheit
+Rückenschmerzen,problem,84,gesundheit
+Kopfschmerzen,problem,78,gesundheit
+Migräne,problem,76,gesundheit
+Blutdruck,problem,88,gesundheit
+Blutzucker,problem,84,gesundheit
+Allergien,problem,74,gesundheit
