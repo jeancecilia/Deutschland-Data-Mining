@@ -94,13 +94,18 @@ def validate_candidates_fast(
             candidate.status = "rejected"
             candidate.rejection_reason = result.reason
         elif result.recommended_action == RECOMMEND_PROMOTE:
-            candidate.status = "fast_validated"  # ready for promotion
+            candidate.status = "fast_validated"
             candidate.promotion_reason = result.reason
         elif result.recommended_action == RECOMMEND_MANUAL_REVIEW:
             candidate.status = "needs_manual_review"
+        elif result.recommended_action == RECOMMEND_SACHBUCH:
+            candidate.status = "needs_manual_review"
+            candidate.promotion_reason = "Sachbuch-Kandidat — manuelle Prüfung vor Pipeline-Start empfohlen"
+        elif result.recommended_action == RECOMMEND_KEYWORD_EXPANSION:
+            candidate.status = "sent_to_keyword_expansion"
         else:
-            candidate.status = "fast_validated"
-
+            candidate.status = "needs_manual_review"
+    
         db.add(candidate)
 
     db.commit()

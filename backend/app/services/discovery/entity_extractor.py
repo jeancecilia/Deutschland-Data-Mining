@@ -190,17 +190,16 @@ def extract_entities_from_raw_items(
             continue
 
         key = f"{normalized}|{entity_type}|{item.language}"
-        existing = existing_entities.get(key)
+        current_entity: DiscoveryEntity | None = existing_entities.get(key)
 
-        if existing is not None:
-            # Bump source_count
-            existing.source_count = (existing.source_count or 1) + 1
-            existing.confidence = min(1.0, existing.confidence + 0.05)
-            db.add(existing)
-            result_entities.append(existing)
+        if current_entity is not None:
+            # Bump source_count on existing entity
+            current_entity.source_count = (current_entity.source_count or 1) + 1
+            current_entity.confidence = min(1.0, current_entity.confidence + 0.05)
+            db.add(current_entity)
             updated += 1
         else:
-            entity = DiscoveryEntity(
+            current_entity = DiscoveryEntity(
                 name=raw_text[:255],
                 normalized_name=normalized,
                 entity_type=entity_type,
@@ -210,30 +209,27 @@ def extract_entities_from_raw_items(
                 source_count=1,
                 metadata_json=item.metadata_json,
             )
-            db.add(entity)
+            db.add(current_entity)
             db.flush()
-            existing_entities[key] = entity
-            result_entities.append(entity)
+            existing_entities[key] = current_entity
             created += 1
 
-        # Also store original text as alias if different from normalized
-        if raw_text.casefold() != normalized:
-            alias_key = f"{entity.id if 'entity' in dir() else (existing.id if existing else None)}|{raw_text.casefold()}"
-            # Check if alias already exists for this entity
-            entity_id = entity.id if 'entity' in dir() else (existing.id if existing else None)
-            if entity_id:
-                existing_alias = db.scalars(
-                    select(DiscoveryEntityAlias).where(
-                        DiscoveryEntityAlias.entity_id == entity_id,
-                        DiscoveryEntityAlias.alias == raw_text[:255],
-                    )
-                ).first()
-                if existing_alias is None:
-                    db.add(DiscoveryEntityAlias(
-                        entity_id=entity_id,
-                        alias=raw_text[:255],
-                        language=item.language,
-                    ))
+        result_entities.append(current_entity)
+
+        # Store original text as alias if different from normalized name
+        if raw_text.casefold() != normalized and current_entity.id:
+            existing_alias = db.scalars(
+                select(DiscoveryEntityAlias).where(
+                    DiscoveryEntityAlias.entity_id == current_entity.id,
+                    DiscoveryEntityAlias.alias == raw_text[:255],
+                )
+            ).first()
+            if existing_alias is None:
+                db.add(DiscoveryEntityAlias(
+                    entity_id=current_entity.id,
+                    alias=raw_text[:255],
+                    language=item.language,
+                ))
 
         item.status = "processed"
         item.processed_at = item.collected_at

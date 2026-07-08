@@ -38,7 +38,7 @@ router = APIRouter()
 
 @router.get("/overview", response_model=DiscoveryOverviewRead)
 def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRead:
-    """Return counts for the entire discovery pipeline."""
+    """Return counts for the entire discovery pipeline (uses SQL COUNT)."""
     from app.models.discovery_pipeline import (
         DiscoverySource,
         RawDiscoveryItem,
@@ -46,32 +46,40 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
         DiscoveryEntityRelation,
         NicheCandidate,
     )
-    from sqlalchemy import select
+    from sqlalchemy import func
 
-    sources = list(db.scalars(select(DiscoverySource)))
-    raw_items = list(db.scalars(select(RawDiscoveryItem.id).limit(100000)))
-    entities = list(db.scalars(select(DiscoveryEntity.id).limit(100000)))
-    relations = list(db.scalars(select(DiscoveryEntityRelation.id).limit(100000)))
-    candidates = list(db.scalars(select(NicheCandidate)))
-
-    new_c = sum(1 for c in candidates if c.status == "new")
-    promoted_c = sum(1 for c in candidates if c.status == "promoted_to_seed")
-    rejected_c = sum(1 for c in candidates if c.status == "rejected")
-    unprocessed = sum(1 for r in db.scalars(
-        select(RawDiscoveryItem).where(RawDiscoveryItem.status == "new")
-    ))
+    source_count = db.scalar(select(func.count(DiscoverySource.id))) or 0
+    active_source_count = db.scalar(
+        select(func.count(DiscoverySource.id)).where(DiscoverySource.is_active == True)  # noqa: E712
+    ) or 0
+    raw_item_count = db.scalar(select(func.count(RawDiscoveryItem.id))) or 0
+    unprocessed_raw_count = db.scalar(
+        select(func.count(RawDiscoveryItem.id)).where(RawDiscoveryItem.status == "new")
+    ) or 0
+    entity_count = db.scalar(select(func.count(DiscoveryEntity.id))) or 0
+    relation_count = db.scalar(select(func.count(DiscoveryEntityRelation.id))) or 0
+    candidate_count = db.scalar(select(func.count(NicheCandidate.id))) or 0
+    new_candidate_count = db.scalar(
+        select(func.count(NicheCandidate.id)).where(NicheCandidate.status == "new")
+    ) or 0
+    promoted_candidate_count = db.scalar(
+        select(func.count(NicheCandidate.id)).where(NicheCandidate.status == "promoted_to_seed")
+    ) or 0
+    rejected_candidate_count = db.scalar(
+        select(func.count(NicheCandidate.id)).where(NicheCandidate.status == "rejected")
+    ) or 0
 
     return DiscoveryOverviewRead(
-        source_count=len(sources),
-        active_source_count=sum(1 for s in sources if s.is_active),
-        raw_item_count=len(raw_items),
-        unprocessed_raw_count=unprocessed,
-        entity_count=len(entities),
-        relation_count=len(relations),
-        candidate_count=len(candidates),
-        new_candidate_count=new_c,
-        promoted_candidate_count=promoted_c,
-        rejected_candidate_count=rejected_c,
+        source_count=source_count,
+        active_source_count=active_source_count,
+        raw_item_count=raw_item_count,
+        unprocessed_raw_count=unprocessed_raw_count,
+        entity_count=entity_count,
+        relation_count=relation_count,
+        candidate_count=candidate_count,
+        new_candidate_count=new_candidate_count,
+        promoted_candidate_count=promoted_candidate_count,
+        rejected_candidate_count=rejected_candidate_count,
     )
 
 
@@ -234,6 +242,7 @@ def compose_candidates(
     batch = compose_niche_candidates(db, limit=limit)
     return {
         "created": batch.created,
+        "skipped_no_relation": batch.skipped_no_relation,
         "skipped_blocked": batch.skipped_blocked,
         "skipped_duplicate": batch.skipped_duplicate,
         "skipped_generic": batch.skipped_generic,

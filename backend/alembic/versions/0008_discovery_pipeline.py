@@ -15,7 +15,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 revision = "0008_discovery_pipeline"
-down_revision = "0007_ai_semantic_intelligence"
+down_revision = "0007_ai_semantic"
 branch_labels = None
 depends_on = None
 
