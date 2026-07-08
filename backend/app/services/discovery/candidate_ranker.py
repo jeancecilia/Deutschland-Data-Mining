@@ -128,7 +128,7 @@ def _score_specificity(candidate_name: str, meta: dict | None) -> int:
             score += 15
 
     if " für " in lowered:
-        score = max(score, 40)
+        score = max(score, 50)  # raised from 40 — KDP title pattern indicator
 
     # Generic topic penalty
     generic_count = sum(1 for w in GENERIC_TOPIC_WORDS if w in lowered)
@@ -153,26 +153,30 @@ def _score_intent(candidate_name: str, meta: dict | None) -> int:
     for word in HIGH_INTENT_WORDS:
         if word in lowered:
             score += 15
-    score = min(45, score)
+    score = min(55, score)
 
     if " für " in lowered:
         score += 10
     if meta and meta.get("problem_hint"):
         score += 10
+    # Strong KDP title pattern bonus
+    if any(w in lowered for w in ["tagebuch", "checkliste", "ratgeber", "arbeitsbuch", "planer"]):
+        if " für " in lowered:
+            score += 15
     return min(100, score)
 
 
 def _score_domain_fit(meta: dict | None) -> int:
     """Score 0–100 based on domain metadata presence."""
     if not meta:
-        return 10
+        return 20
     score = 0
     if meta.get("macro_domain") or meta.get("domain"):
-        score += 30
+        score += 50  # raised from 30 — having any domain is valuable
     if meta.get("subdomain"):
-        score += 30
+        score += 25
     if meta.get("micro_domain"):
-        score += 40
+        score += 25
     return score
 
 
