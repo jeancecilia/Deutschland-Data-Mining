@@ -407,6 +407,82 @@ def reject_candidate(
     return {"status": "ok", "candidate_id": candidate_id, "new_status": "rejected"}
 
 
+@router.post("/candidates/rank")
+def rank_candidates(
+    limit: int = Query(default=5000, ge=100, le=50000),
+    min_score: int = Query(default=60, ge=0, le=100),
+    max_per_macro_domain: int = Query(default=100, ge=1, le=500),
+    max_per_subdomain: int = Query(default=30, ge=1, le=100),
+    max_per_micro_domain: int = Query(default=3, ge=1, le=20),
+    db: Session = Depends(get_db),
+) -> dict:
+    from app.services.discovery.candidate_ranker import rank_candidates_for_validation
+    result = rank_candidates_for_validation(
+        db,
+        limit=limit,
+        min_score=min_score,
+        max_per_macro_domain=max_per_macro_domain,
+        max_per_subdomain=max_per_subdomain,
+        max_per_micro_domain=max_per_micro_domain,
+    )
+    return {
+        "ranked": result.ranked,
+        "queued": result.queued,
+        "manual_review": result.manual_review,
+        "rejected_pre_validation": result.rejected_pre_validation,
+        "top_score": result.top_score,
+        "avg_score": result.avg_score,
+    }
+
+
+@router.get("/candidates/validation-queue")
+def get_validation_queue(
+    status: str | None = Query(default=None),
+    macro_domain: str | None = Query(default=None),
+    limit: int = Query(default=200, ge=1, le=2000),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    from app.models.discovery_pipeline import NicheCandidate
+    from sqlalchemy import select as sa_select, and_
+
+    stmt = sa_select(NicheCandidate)
+    conditions = []
+    if status:
+        conditions.append(NicheCandidate.source_entities["validation_queue_status"].as_string() == status)
+    if macro_domain:
+        conditions.append(NicheCandidate.source_entities["macro_domain"].as_string() == macro_domain)
+    if conditions:
+        stmt = stmt.where(and_(*conditions))
+
+    # Order by validation_priority desc, pre_validation_score desc
+    stmt = stmt.order_by(
+        NicheCandidate.source_entities["validation_priority"].as_float().desc().nullslast()
+    ).limit(limit)
+
+    candidates = list(db.scalars(stmt))
+    result = []
+    for c in candidates:
+        se = c.source_entities or {}
+        result.append({
+            "id": c.id,
+            "candidate_name": c.candidate_name,
+            "pre_validation_score": se.get("pre_validation_score"),
+            "naturalness_score": se.get("naturalness_score"),
+            "specificity_score": se.get("specificity_score"),
+            "intent_score": se.get("intent_score"),
+            "domain_fit_score": se.get("domain_fit_score"),
+            "format_fit_score": se.get("format_fit_score"),
+            "duplication_score": se.get("duplication_score"),
+            "validation_queue_status": se.get("validation_queue_status"),
+            "validation_priority": se.get("validation_priority"),
+            "macro_domain": se.get("macro_domain"),
+            "subdomain": se.get("subdomain"),
+            "micro_domain": se.get("micro_domain"),
+            "status": c.status,
+        })
+    return result
+
+
 @router.post("/candidates/promote")
 def promote_candidates(
     limit: int = Query(default=50, ge=1, le=200),
