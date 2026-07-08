@@ -154,6 +154,62 @@ export type DiscoveryCandidate = {
   last_validated_at: string | null;
 };
 
+export type DiscoveryPipelineOverview = {
+  source_count: number;
+  active_source_count: number;
+  raw_item_count: number;
+  unprocessed_raw_count: number;
+  entity_count: number;
+  relation_count: number;
+  candidate_count: number;
+  new_candidate_count: number;
+  promoted_candidate_count: number;
+  rejected_candidate_count: number;
+};
+
+export type PipelineEntity = {
+  id: number;
+  name: string;
+  normalized_name: string;
+  entity_type: string;
+  language: string;
+  confidence: number;
+  source_count: number;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type PipelineCandidate = {
+  id: number;
+  candidate_name: string;
+  normalized_name: string;
+  main_topic: string | null;
+  audience: string | null;
+  problem: string | null;
+  format: string | null;
+  book_class_guess: string | null;
+  language: string;
+  marketplace: string;
+  generation_template: string | null;
+  confidence: number;
+  risk_level: string | null;
+  status: string;
+  fast_validation_score: number | null;
+  rejection_reason: string | null;
+  promotion_reason: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PipelineCandidateKeyword = {
+  id: number;
+  niche_candidate_id: number;
+  keyword: string;
+  keyword_type: string | null;
+  language: string;
+  confidence: number;
+};
+
 export type RecentCrawl = {
   run_id: number;
   keyword_id: number;
@@ -345,6 +401,8 @@ export type DashboardData = {
   reports: Report[];
   discoveryUniverse: DiscoveryUniverse | null;
   discoveryCandidates: DiscoveryCandidate[];
+  discoveryPipelineOverview: DiscoveryPipelineOverview | null;
+  discoveryPipelineCandidates: PipelineCandidate[];
   operations: OperationsSummary | null;
   clusterDetails: ClusterDetail[];
   sachbuchAnalyses: SachbuchAnalysis[];
@@ -475,6 +533,34 @@ async function getOperationsSummary(): Promise<OperationsSummary | null> {
   }
 }
 
+async function getDiscoveryPipelineOverview(): Promise<DiscoveryPipelineOverview | null> {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/v1/discovery-pipeline/overview`, {
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as DiscoveryPipelineOverview;
+  } catch {
+    return null;
+  }
+}
+
+async function getDiscoveryPipelineCandidates(): Promise<PipelineCandidate[]> {
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/v1/discovery-pipeline/candidates?limit=24`, {
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      return [];
+    }
+    return (await response.json()) as PipelineCandidate[];
+  } catch {
+    return [];
+  }
+}
+
 async function getClusterDetails(clusters: Cluster[]): Promise<ClusterDetail[]> {
   const responses = await Promise.all(
     clusters.map(async (cluster) => {
@@ -531,6 +617,8 @@ function buildDashboardData(
     reports: [],
     discoveryUniverse: null,
     discoveryCandidates: [],
+    discoveryPipelineOverview: null,
+    discoveryPipelineCandidates: [],
     operations: null,
     clusterDetails: [],
     sachbuchAnalyses: [],
@@ -592,16 +680,26 @@ export async function loadOverviewData(): Promise<DashboardData> {
 }
 
 export async function loadDiscoveryPageData(): Promise<DashboardData> {
-  const [runtimeStatus, discoveryUniverse, discoveryCandidates] = await Promise.all([
+  const [
+    runtimeStatus,
+    discoveryUniverse,
+    discoveryCandidates,
+    discoveryPipelineOverview,
+    discoveryPipelineCandidates
+  ] = await Promise.all([
     getRuntimeStatus(),
     getDiscoveryUniverse(),
-    getDiscoveryCandidates()
+    getDiscoveryCandidates(),
+    getDiscoveryPipelineOverview(),
+    getDiscoveryPipelineCandidates()
   ]);
 
   return buildDashboardData({
     runtimeStatus,
     discoveryUniverse,
-    discoveryCandidates
+    discoveryCandidates,
+    discoveryPipelineOverview,
+    discoveryPipelineCandidates
   });
 }
 

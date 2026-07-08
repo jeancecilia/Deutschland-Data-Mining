@@ -33,6 +33,8 @@ class Keyword(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="new")
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     notes: Mapped[str | None] = mapped_column(Text)
+    source_niche_candidate_id: Mapped[int | None] = mapped_column(ForeignKey("niche_candidates.id"), nullable=True, index=True)
+    discovery_origin_type: Mapped[str | None] = mapped_column(String(50), nullable=True, default=None, comment="initial_discovery, manual, etc.")
 
     seed_keyword: Mapped["Keyword | None"] = relationship(remote_side=[id])
     search_runs: Mapped[list["SearchRun"]] = relationship(back_populates="keyword")

@@ -8,6 +8,15 @@ from app.models.discovery import (
     DiscoveryRun,
     DiscoveryTopic,
 )
+from app.models.discovery_pipeline import (
+    DiscoveryEntity,
+    DiscoveryEntityAlias,
+    DiscoveryEntityRelation,
+    DiscoverySource,
+    NicheCandidate,
+    NicheCandidateKeyword,
+    RawDiscoveryItem,
+)
 from app.models.base import Base
 from app.models.book import Book
 from app.models.keyword import Keyword
@@ -18,21 +27,28 @@ from app.models.run import BSRSnapshot, SearchResult, SearchRun
 
 __all__ = [
     "Base",
-    "BSRSnapshot",
     "Book",
     "BookInsight",
+    "BSRSnapshot",
     "DiscoveryAudience",
     "DiscoveryBookFormat",
     "DiscoveryCandidate",
     "DiscoveryContext",
+    "DiscoveryEntity",
+    "DiscoveryEntityAlias",
+    "DiscoveryEntityRelation",
     "DiscoveryPainPoint",
     "DiscoveryRun",
+    "DiscoverySource",
     "DiscoveryTopic",
     "Keyword",
+    "NicheCandidate",
+    "NicheCandidateKeyword",
     "NicheCluster",
     "NicheClusterBook",
     "NicheClusterKeyword",
     "OpportunityScore",
+    "RawDiscoveryItem",
     "Report",
     "Review",
     "ReviewCluster",

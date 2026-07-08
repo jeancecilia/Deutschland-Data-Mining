@@ -1,0 +1,33 @@
+name,entity_type,priority
+IHK-Prüfung,exam,95
+IHK Abschlussprüfung,exam,94
+IHK Zwischenprüfung,exam,88
+Ausbildereignungsprüfung,exam,85
+Meisterprüfung,exam,90
+Fachwirtprüfung,exam,82
+Betriebswirt IHK,exam,80
+Handwerksmeister,exam,86
+Sachkundeprüfung,exam,78
+Einbürgerungstest,exam,92
+Deutsch B1,exam,88
+Deutsch B2,exam,86
+Deutsch C1,exam,84
+DTZ Prüfung,exam,82
+telc Deutsch,exam,80
+Goethe-Zertifikat,exam,78
+Abitur,exam,90
+Fachabitur,exam,85
+Mittlere Reife,exam,82
+Hauptschulabschluss,exam,78
+Qualifizierender Hauptschulabschluss,exam,76
+Führerschein Klasse B,exam,80
+Führerschein Klasse A,exam,70
+Führerschein Klasse C,exam,68
+LKW-Führerschein,exam,70
+Personenbeförderungsschein,exam,65
+Jagdprüfung,exam,62
+Fischereiprüfung,exam,58
+Sportbootführerschein,exam,60
+Funkzeugnis,exam,50
+Sachkundenachweis Pflanzenschutz,exam,60
+Hundeführerschein,exam,65

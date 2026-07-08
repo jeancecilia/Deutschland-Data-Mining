@@ -1,0 +1,42 @@
+name,entity_type,priority
+erste Wohnung,life_event,95
+Umzug,life_event,90
+Auszug bei den Eltern,life_event,88
+Zusammenziehen,life_event,85
+Hochzeit,life_event,88
+Heiraten,life_event,88
+Scheidung,life_event,82
+Trennung,life_event,80
+Schwangerschaft,life_event,92
+Geburt,life_event,90
+Elternzeit,life_event,85
+Einschulung,life_event,82
+Schulwechsel,life_event,75
+Schulabschluss,life_event,85
+Studienbeginn,life_event,84
+Studium,life_event,82
+Berufseinstieg,life_event,86
+Jobwechsel,life_event,82
+Arbeitslosigkeit,life_event,78
+Selbstständigkeit,life_event,84
+Existenzgründung,life_event,82
+Firmengründung,life_event,80
+Rente,life_event,86
+Ruhestand,life_event,84
+Pensionierung,life_event,80
+Pflegefall in der Familie,life_event,92
+Pflegegrad beantragen,life_event,90
+Todesfall,life_event,88
+Trauerfall,life_event,88
+Erbschaft,life_event,78
+Nachwuchs,life_event,88
+Krankheit,life_event,82
+Reha,life_event,78
+Krankenhausaufenthalt,life_event,80
+Autokauf,life_event,72
+Hauskauf,life_event,80
+Wohnungskauf,life_event,78
+Hausbau,life_event,76
+Renovierung,life_event,74
+Auslandsaufenthalt,life_event,72
+Auswanderung,life_event,70

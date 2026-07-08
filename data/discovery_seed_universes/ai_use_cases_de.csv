@@ -1,0 +1,27 @@
+name,entity_type,priority
+KI,skill,95
+ChatGPT,skill,92
+Künstliche Intelligenz,skill,90
+Prompt Engineering,skill,82
+KI im Handwerk,topic,88
+KI für Selbstständige,topic,84
+KI für Lehrer,topic,80
+KI für Studenten,topic,78
+KI für Marketing,topic,76
+KI für Buchhaltung,topic,72
+KI für Content Creation,topic,74
+KI für Social Media,topic,72
+KI für Bewerbungen,topic,70
+Midjourney,skill,78
+DALL-E,skill,72
+Canva KI,skill,70
+KI Ethik,topic,68
+KI Recht,topic,64
+Automatisierung mit KI,topic,76
+KI Prozessoptimierung,topic,72
+KI-Assistenten,topic,68
+KI Bildgenerierung,topic,70
+KI Textgenerierung,topic,74
+KI Übersetzung,topic,66
+KI für den Alltag,topic,82
+KI für Senioren,topic,76

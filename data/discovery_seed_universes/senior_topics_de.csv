@@ -1,0 +1,36 @@
+name,entity_type,priority
+Senioren,audience,95
+Rentner,audience,90
+Ruheständler,audience,88
+Pflege,audience,92
+Pflegebedürftigkeit,topic,90
+Pflegegrad,topic,88
+Pflegeantrag,topic,86
+Pflegeorganisation,topic,84
+Pflegedokumentation,topic,82
+Seniorenheim,topic,78
+Betreutes Wohnen,topic,76
+Barrierefreiheit,topic,74
+Demenz,topic,88
+Alzheimer,topic,85
+Gedächtnistraining,topic,82
+Sturzprävention,topic,80
+Seniorengymnastik,topic,76
+Seniorensport,topic,74
+Rente beantragen,topic,82
+Altersvorsorge,topic,80
+Patientenverfügung,topic,84
+Vorsorgevollmacht,topic,82
+Testament,topic,80
+Erben,topic,76
+Digitalisierung Senioren,topic,78
+Smartphone Senioren,topic,76
+Internet Senioren,topic,74
+Seniorenreisen,topic,68
+Senioren Alltag,topic,82
+Wohnen im Alter,topic,80
+Gesundheit im Alter,topic,84
+Ernährung Senioren,topic,76
+Einsamkeit im Alter,topic,78
+Großeltern,topic,72
+Enkelkinder,topic,70
