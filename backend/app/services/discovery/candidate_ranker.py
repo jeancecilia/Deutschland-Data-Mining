@@ -339,9 +339,10 @@ def rank_candidates_for_validation(
         pre_val = int(
             nat * 0.15 + spec * 0.20 + intent * 0.15 +
             dom_fit * 0.10 + fmt_fit * 0.10 - dup * 0.10 +
-            aud_fit * 0.10 + fmt_style * 0.10 +
-            compound_boost * 0.12 + generic_penalty * 0.10
+            aud_fit * 0.10 + fmt_style * 0.10
         )
+        # Apply compound boost and generic penalty directly for real impact
+        pre_val += compound_boost + generic_penalty
         pre_val = max(0, min(100, pre_val))
         all_scores.append(pre_val)
         top_score = max(top_score, pre_val)
@@ -360,7 +361,7 @@ def rank_candidates_for_validation(
                 macro_counts[macro] = macro_counts.get(macro, 0) + 1
                 sub_counts[sub] = sub_counts.get(sub, 0) + 1
                 micro_counts[micro] = micro_counts.get(micro, 0) + 1
-        elif pre_val >= 70:
+        elif pre_val >= 60:
             status = "manual_review"
         else:
             status = "rejected_pre_validation"
