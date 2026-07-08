@@ -96,6 +96,7 @@ class RelationBuilderResult:
     skipped: int
     co_occurrence: int
     dict_pairs: int
+    domain_relations: int = 0
     relations: list[DiscoveryEntityRelation]
 
 
@@ -138,6 +139,7 @@ def build_entity_relations(
     *,
     limit_per_rule: int = 20,
     max_per_domain: int = 200,
+    max_domains: int = 1000,
 ) -> RelationBuilderResult:
     """Build relations between entities using SQL-optimized strategies.
 
@@ -149,7 +151,7 @@ def build_entity_relations(
     created = 0
     skipped = 0
     dict_pair_count = 0
-    domain_count = 0
+    domain_relations_count = 0
     co_occurrence_count = 0
     result_relations: list[DiscoveryEntityRelation] = []
 
@@ -191,8 +193,8 @@ def build_entity_relations(
     domain_rows = db.execute(text(
         "SELECT DISTINCT metadata_json->>'domain' as domain FROM discovery_entities "
         "WHERE metadata_json->>'domain' IS NOT NULL AND metadata_json->>'domain' != '' "
-        "LIMIT 50"
-    )).fetchall()
+        "LIMIT :max_domains"
+    ), {"max_domains": max_domains}).fetchall()
     domains = [str(r[0]) for r in domain_rows if r[0]]
 
     for domain in domains:
@@ -327,5 +329,6 @@ def build_entity_relations(
         skipped=skipped,
         co_occurrence=co_occurrence_count,
         dict_pairs=dict_pair_count,
+        domain_relations=domain_relations_count,
         relations=result_relations,
     )

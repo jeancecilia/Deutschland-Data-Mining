@@ -77,9 +77,14 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
     for row in type_rows:
         entity_types[str(row[0])] = int(row[1])
 
-    # Domain stats (from entity metadata_json)
+    # Domain stats (from raw items)
     domain_count = db.scalar(
         text("SELECT COUNT(DISTINCT metadata_json->>'domain') FROM raw_discovery_items WHERE metadata_json->>'domain' IS NOT NULL")
+    ) or 0
+
+    # Domain stats (from entities)
+    entity_domain_count = db.scalar(
+        text("SELECT COUNT(DISTINCT metadata_json->>'domain') FROM discovery_entities WHERE metadata_json->>'domain' IS NOT NULL AND metadata_json->>'domain' != ''")
     ) or 0
 
     top_domains: list[dict[str, object]] = []
@@ -97,6 +102,7 @@ def get_discovery_overview(db: Session = Depends(get_db)) -> DiscoveryOverviewRe
         entity_count=entity_count,
         entity_types=entity_types,
         domain_count=domain_count,
+        entity_domain_count=entity_domain_count,
         top_domains=top_domains,
         relation_count=relation_count,
         candidate_count=candidate_count,
@@ -204,12 +210,18 @@ def get_entity_neighbors(
 
 @router.post("/relations/build")
 def build_relations(
-    limit_per_rule: int = Query(default=20, ge=1, le=100),
+    limit_per_rule: int = Query(default=20, ge=1, le=500),
+    max_domains: int = Query(default=1000, ge=1, le=5000),
     db: Session = Depends(get_db),
 ) -> dict:
     from app.services.discovery.relation_builder import build_entity_relations
-    result = build_entity_relations(db, limit_per_rule=limit_per_rule)
-    return {"created": result.created, "skipped": result.skipped}
+    result = build_entity_relations(db, limit_per_rule=limit_per_rule, max_domains=max_domains)
+    return {
+        "created": result.created,
+        "skipped": result.skipped,
+        "domain_relations": getattr(result, 'domain_relations', 0),
+        "dict_pairs": result.dict_pairs,
+    }
 
 
 # ── Niche Candidates ────────────────────────────────────────────────────────
