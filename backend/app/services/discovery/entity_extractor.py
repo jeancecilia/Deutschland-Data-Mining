@@ -163,6 +163,12 @@ def extract_entities_from_raw_items(
         key = f"{entity.normalized_name}|{entity.entity_type}|{entity.language}"
         existing_entities[key] = entity
 
+    # Track aliases in-memory to avoid duplicate key violations within a batch
+    # (SQLAlchemy select() only sees committed rows, not session.new objects)
+    known_aliases: set[tuple[int, str]] = set()
+    for alias in db.scalars(select(DiscoveryEntityAlias)):
+        known_aliases.add((alias.entity_id, alias.alias))
+
     created = 0
     updated = 0
     skipped = 0
@@ -217,19 +223,16 @@ def extract_entities_from_raw_items(
         result_entities.append(current_entity)
 
         # Store original text as alias if different from normalized name
+        alias_text = raw_text[:255]
         if raw_text.casefold() != normalized and current_entity.id:
-            existing_alias = db.scalars(
-                select(DiscoveryEntityAlias).where(
-                    DiscoveryEntityAlias.entity_id == current_entity.id,
-                    DiscoveryEntityAlias.alias == raw_text[:255],
-                )
-            ).first()
-            if existing_alias is None:
+            alias_key = (current_entity.id, alias_text)
+            if alias_key not in known_aliases:
                 db.add(DiscoveryEntityAlias(
                     entity_id=current_entity.id,
-                    alias=raw_text[:255],
+                    alias=alias_text,
                     language=item.language,
                 ))
+                known_aliases.add(alias_key)
 
         item.status = "processed"
         item.processed_at = item.collected_at
