@@ -241,6 +241,45 @@ def _score_format_style(candidate_name: str, meta: dict | None) -> int:
     return max(0, score)
 
 
+# German compound KDP patterns: concrete_object + format
+COMPOUND_KDP_PATTERNS: dict[str, list[str]] = {
+    "tagebuch": ["blutdruck", "blutzucker", "schmerz", "migräne", "symptom", "schlaf", "futter", "pflege"],
+    "checkliste": ["pflegegrad", "umzug", "schulstart", "steuer", "bewerbung", "ecommerce"],
+    "planer": ["medikamenten", "haushaltsbudget", "studium", "adhs", "garten", "content"],
+    "arbeitsbuch": ["excel", "buchhaltung", "karriere", "lernen", "adhs"],
+    "ratgeber": ["smartphone", "senioren", "pflege", "reise"],
+    "vorlage": ["rechnung", "lebenslauf", "bewerbung", "businessplan"],
+    "ordner": ["pflege", "notfall", "dokumente"],
+}
+
+
+def _score_compound_kdp_boost(candidate_name: str) -> int:
+    """Score 0–12 for German compound KDP concepts."""
+    lowered = candidate_name.lower()
+    for fmt_word, objects in COMPOUND_KDP_PATTERNS.items():
+        if fmt_word in lowered:
+            for obj in objects:
+                if obj in lowered and " für " in lowered:
+                    return 12
+    # Partial: just has compound
+    for fmt_word in COMPOUND_KDP_PATTERNS:
+        if fmt_word in lowered and any(obj in lowered for obj in COMPOUND_KDP_PATTERNS[fmt_word]):
+            return 6
+    return 0
+
+
+def _score_generic_pattern_penalty(candidate_name: str) -> int:
+    """Score -20 for generic auto-fill patterns, 0 otherwise."""
+    import re
+    lowered = candidate_name.lower()
+    if re.match(r"^[a-zäöüß]+ (hilfe|beratung|organisation|optimierung|planung|grundlagen|training) für ", lowered):
+        # Check if it has a concrete object
+        has_concrete = any(cw in lowered for cw in CONCRETE_USE_CASE_WORDS)
+        if not has_concrete:
+            return -20
+    return 0
+
+
 def rank_candidates_for_validation(
     db: Session,
     *,
@@ -294,11 +333,14 @@ def rank_candidates_for_validation(
         dup = _score_duplication(name, candidate.normalized_name, macro, domain_index)
         aud_fit = _score_audience_fit(se)
         fmt_style = _score_format_style(name, se)
+        compound_boost = _score_compound_kdp_boost(name)
+        generic_penalty = _score_generic_pattern_penalty(name)
 
         pre_val = int(
             nat * 0.15 + spec * 0.20 + intent * 0.15 +
             dom_fit * 0.10 + fmt_fit * 0.10 - dup * 0.10 +
-            aud_fit * 0.10 + fmt_style * 0.10
+            aud_fit * 0.10 + fmt_style * 0.10 +
+            compound_boost * 0.12 + generic_penalty * 0.20
         )
         pre_val = max(0, min(100, pre_val))
         all_scores.append(pre_val)
