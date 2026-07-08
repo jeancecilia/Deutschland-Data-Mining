@@ -315,10 +315,53 @@ def compose_micro_domain_candidates(
         if not audience or not fmt:
             continue
 
+        lowered_name = ename.lower()
+
+        # Check if micro_domain already contains audience/format to avoid duplication
+        has_audience = audience.lower() in lowered_name
+        has_format = fmt.lower() in lowered_name
+        has_problem = problem.lower() in lowered_name if problem else False
+
         created_for_this = 0
+
+        # First: always create the canonical candidate (micro_domain as-is)
+        if created_total < limit and created_for_this < max_candidates_per_micro_domain:
+            canonical = ename
+            normalized = normalize_entity_name(canonical)
+            if normalized and normalized not in existing_names:
+                if not is_too_generic(canonical):
+                    candidate = NicheCandidate(
+                        candidate_name=canonical,
+                        normalized_name=normalized,
+                        main_topic_entity_id=eid,
+                        book_class_guess="sachbuch",
+                        language="de", marketplace="amazon.de",
+                        generation_template="micro_domain:canonical",
+                        source_entities={
+                            "topic": eid, "domain": macro,
+                            "macro_domain": macro, "subdomain": sub,
+                            "micro_domain": ename,
+                            "canonical_micro_domain": ename,
+                            "source": meta.get("source", "micro_domain_catalog_10k_de"),
+                            "is_curated": True,
+                        },
+                        confidence=55, risk_level="low", status="new",
+                    )
+                    db.add(candidate)
+                    db.flush()
+                    existing_names.add(normalized)
+                    created_for_this += 1
+                    created_total += 1
+
         for tpl in MICRO_TEMPLATES:
             if created_total >= limit or created_for_this >= max_candidates_per_micro_domain:
                 break
+
+            # Skip templates that would duplicate what's already in the micro_domain
+            if has_audience and "{audience}" in tpl:
+                continue
+            if has_format and "{format}" in tpl:
+                continue
 
             phrase = tpl.format(topic=ename, audience=audience, problem=problem, format=fmt)
             normalized = normalize_entity_name(phrase)

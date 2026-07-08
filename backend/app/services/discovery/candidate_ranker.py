@@ -253,18 +253,26 @@ COMPOUND_KDP_PATTERNS: dict[str, list[str]] = {
 }
 
 
-def _score_compound_kdp_boost(candidate_name: str) -> int:
-    """Score 0–12 for German compound KDP concepts."""
+def _score_compound_kdp_boost(candidate_name: str, source_entities: dict | None = None) -> int:
+    """Score 0–12 for German compound KDP concepts. Checks candidate_name and canonical_micro_domain."""
     lowered = candidate_name.lower()
-    for fmt_word, objects in COMPOUND_KDP_PATTERNS.items():
-        if fmt_word in lowered:
-            for obj in objects:
-                if obj in lowered and " für " in lowered:
-                    return 12
-    # Partial: just has compound
-    for fmt_word in COMPOUND_KDP_PATTERNS:
-        if fmt_word in lowered and any(obj in lowered for obj in COMPOUND_KDP_PATTERNS[fmt_word]):
-            return 6
+    # Also check canonical micro-domain from source_entities
+    canonical = ""
+    if source_entities:
+        canonical = str(source_entities.get("canonical_micro_domain", "")).lower()
+    check_texts = [lowered]
+    if canonical and canonical != lowered:
+        check_texts.append(canonical)
+
+    for text in check_texts:
+        for fmt_word, objects in COMPOUND_KDP_PATTERNS.items():
+            if fmt_word in text:
+                for obj in objects:
+                    if obj in text and " für " in text:
+                        return 12
+        for fmt_word in COMPOUND_KDP_PATTERNS:
+            if fmt_word in text and any(obj in text for obj in COMPOUND_KDP_PATTERNS[fmt_word]):
+                return 6
     return 0
 
 
@@ -333,7 +341,7 @@ def rank_candidates_for_validation(
         dup = _score_duplication(name, candidate.normalized_name, macro, domain_index)
         aud_fit = _score_audience_fit(se)
         fmt_style = _score_format_style(name, se)
-        compound_boost = _score_compound_kdp_boost(name)
+        compound_boost = _score_compound_kdp_boost(name, se)
         generic_penalty = _score_generic_pattern_penalty(name)
 
         pre_val = int(
