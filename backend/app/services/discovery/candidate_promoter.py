@@ -1,8 +1,10 @@
 """
-Candidate Promoter v2 — manual review gate, respects auto_promote_allowed.
+Candidate Promoter v2 — manual review gate, respects DISCOVERY_AUTO_PROMOTE_ENABLED.
 
-Only promotes candidates with status='approved_for_promotion' (manual approval)
-or 'fast_validated' + auto_promote_allowed=True (if auto-promote enabled).
+Risk rules:
+  - blocked/restricted: NEVER promotable
+  - high: only promotable after manual approval (status=approved_for_promotion)
+  - low/medium: promotable when approved or auto-promote enabled
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models.discovery_pipeline import NicheCandidate, NicheCandidateKeyword
 from app.models.keyword import Keyword
 from app.services.keyword_intelligence import infer_keyword_intelligence
@@ -33,29 +36,38 @@ def promote_candidates_to_seeds(
     min_score: int = 50,
     force: bool = False,
 ) -> PromoteBatch:
-    """Promote candidates to seed keywords — manual gate enforced.
+    """Promote candidates to seed keywords.
 
-    Without force=True:
-      Only promotes candidates with status='approved_for_promotion'.
-
-    With force=True (testing only):
-      Promotes candidates with status='fast_validated' + auto_promote_allowed=True.
+    Rules:
+      - blocked/restricted: never promoted
+      - high risk: only after manual approval (status=approved_for_promotion)
+      - low/medium: when approved, or if auto-promote is enabled + auto_promote_allowed
     """
-    if force:
+    settings = get_settings()
+    auto_promote_enabled = settings.discovery_auto_promote_enabled
+
+    if auto_promote_enabled or force:
+        # Auto-promote eligible candidates + approved ones
         candidates = list(
             db.scalars(
                 select(NicheCandidate)
                 .where(
-                    NicheCandidate.status == "fast_validated",
-                    NicheCandidate.auto_promote_allowed == True,  # noqa: E712
+                    (
+                        (NicheCandidate.status == "approved_for_promotion")
+                        | (
+                            (NicheCandidate.status == "fast_validated")
+                            & (NicheCandidate.auto_promote_allowed == True)  # noqa: E712
+                        )
+                    ),
+                    NicheCandidate.risk_category.notin_(["blocked", "restricted"]),
                     NicheCandidate.fast_validation_score >= min_score,
                 )
-                .order_by(NicheCandidate.fast_validation_score.desc())
+                .order_by(NicheCandidate.fast_validation_score.desc().nullslast())
                 .limit(limit)
             )
         )
     else:
-        # Manual approval gate — only promote approved candidates
+        # Manual approval gate only
         candidates = list(
             db.scalars(
                 select(NicheCandidate)
@@ -72,13 +84,13 @@ def promote_candidates_to_seeds(
     result_keywords: list[Keyword] = []
 
     for candidate in candidates:
-        # Safety check: never promote blocked/restricted
+        # NEVER promote blocked/restricted
         if candidate.risk_category in ("blocked", "restricted"):
             skipped_risk += 1
             continue
 
-        # Safety check: high risk requires manual approval regardless
-        if candidate.risk_category == "high" and not force:
+        # High risk: only if manually approved (status already checked by query)
+        if candidate.risk_category == "high" and candidate.status != "approved_for_promotion":
             skipped_risk += 1
             continue
 
