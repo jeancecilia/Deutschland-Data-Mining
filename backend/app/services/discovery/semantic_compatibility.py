@@ -12,7 +12,11 @@ from dataclasses import dataclass
 from app.services.discovery.domain_compatibility_rules import (
     DOMAIN_AUDIENCE_COMPATIBILITY,
     INCOMPATIBLE_COMBINATIONS,
+    load_compatibility_from_csvs,
 )
+
+# Auto-load CSV compatibility rules at module import time
+load_compatibility_from_csvs()
 
 
 @dataclass(frozen=True)
