@@ -1,0 +1,168 @@
+{
+  "cluster": {
+    "id": 1,
+    "name": "Blutdrucktagebuch",
+    "main_keyword": "Blutdrucktagebuch",
+    "book_class": "medium_content"
+  },
+  "score": {
+    "demand_score": 35,
+    "saturation_risk": 20,
+    "entry_feasibility_score": 70,
+    "review_wall_risk": 1,
+    "differentiation_score": 37,
+    "ai_slop_score": 30,
+    "content_complexity_risk": 35,
+    "price_compression_risk": 20,
+    "authority_risk": 10,
+    "research_effort_score": 20,
+    "final_score": 28,
+    "explanation": "Cluster uses 26 related keywords and 15 unique books from the latest runs. 0 books appear across multiple keyword runs. Top-book median review count is 2 with average 129. 0 negative review clusters and 1 positive review clusters were found."
+  },
+  "books": [
+    {
+      "asin": "B0H4G5SKR2",
+      "title": "Blutdruckpass: Kleines Blutdruck Tagebuch im handlichen DIN A6-ähnlichen Format zum Eintragen: 1.300 Messwerte auf 100 Tabellenseiten für Blutdruck, Puls, Medikation & Arzttermin",
+      "author": "von morgen. (Autor) Format: Taschenbuch",
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0GXL1DZQP",
+      "title": "Blutdruck Tagebuch für Senioren – Großdruck: Blutdruckpass für tägliche Messungen & einfache Dokumentation (Blutdrucktagebücher)",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0GSVMWHMW",
+      "title": "Blutdruck Tagebuch: Kompakter Blutdruckpass zur täglichen Aufzeichnung von Blutdruck und Puls",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0FWZQ7SMP",
+      "title": "Blutdruck Tagebuch Klein: Blutdruckpass | Mini-Format ca. A6 10 x 15 cm | zum Eintragen der Messwerte | Blutdruck & Puls übersichtlich dokumentieren",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0C4X66RYR",
+      "title": "Blutdruck Tagebuch: 1 Jahr- Einfacher Blutdruckpass zum Eintragen der täglichen Messwerte. Übersichtlich & kompakt.",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0H4FVXLTH",
+      "title": "Mein Blutdrucktagebuch: Blutdruckwerte, Puls, Medikamente und Beschwerden dokumentieren | Mit Arztprotokollen, Monatsübersichten und 3-Monats-Verlauf",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0BYRPWFP2",
+      "title": "Blutdruck Protokoll: Blutdruck Logbuch / Blutdruckpass zum Ausfüllen mit Platz für mehr als 2100 Messungen - Vorgedruckte Seiten zum Einfachen Dokumentieren wichtiger Daten",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0DPF7ZW26",
+      "title": "Blutdruck Tagebcuh: Ihr persönlicher Ratgeber für Blutdruckgesundheit | Blutdruckpass",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B09X26SDX4",
+      "title": "Blutdruck Tagebuch: Blutdruck messen und dokumentieren - ein Buch zum Aufschreiben deiner Blutdruckwerte",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "1544872054",
+      "title": "Blutdruckpass: Für die täglichen Messwerte",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B09SFM9WXP",
+      "title": "Blutdruckpass: Blutdruck Tagebuch zum täglichen Aufzeichnen | Blutdruck Heft mit Platz für 1190 Einträge (entspricht 1 Jahr) | Kompakt und gut lesbar",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0BYRXDQPD",
+      "title": "Blutdruck Tagebuch: Blutdruck Logbuch / Blutdruckpass zum Ausfüllen mit Platz für mehr als 2100 Messungen - Vorgedruckte Seiten zum Einfachen Dokumentieren wichtiger Daten",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0DPB4PBJD",
+      "title": "Blutdruckpass: Blutdruck Tagebuch - Tägliche Messungen Für 1 Jahr, A5 Format, Vorgedruckte Wocheneinteilung, Große Schrift Und Kästchen",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0FXV1NWCH",
+      "title": "Blutdruck Protokoll »Bergsee« mit Medikamentenplan: 1 Jahr 3 mal täglich Blutdruck Werte und Puls erfassen, einfache Verwendung für Frauen und Männer, alle Altersgruppen",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0FQ2VYW4N",
+      "title": "Blutdruck Tagebuch: 52 Wochen | Tägliches Blutdruck Logbuch + Notizen | Inkl. Vitalchart, Medikamentenliste, Nahrungsergänzungsmittel & Arzttermine | ... Die professionelle Gesundheits-Logbuch-Serie)",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0BQY4MSXL",
+      "title": "Blutdruck Tagebuch zum täglichen Eintragen der Messwerte: Der Blutdruckpass mit Platz für über 1800 Eintragungen, Format ähnlich A5",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0FXMQH9DC",
+      "title": "Blutdruck Tagebuch Wochenweise: Kompakter Blutdruckpass | zum Eintragen der Messwerte | übersichtliches Format",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B09TN6CZGV",
+      "title": "Blutdrucktagebuch: A5 Blutdruckpass für 2 Jahre täglichen Messwerte für senioren frauen und männer",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    },
+    {
+      "asin": "B0D896SHZD",
+      "title": "Blutdruck Tagebuch für Senioren: Praktischer Blutdruck Pass für tägliche Blutdruckmessung und Eintragen der Blutdruckwerte (Blutdrucktagebücher)",
+      "author": null,
+      "publisher": null,
+      "marketplace": "amazon.de"
+    }
+  ],
+  "review_clusters": [
+    {
+      "cluster_name": "general_feedback",
+      "sentiment": "positive",
+      "frequency": 1,
+      "severity": 1,
+      "summary": "1 review(s) mention general feedback with positive sentiment.",
+      "example_snippets": "Meine Mutter ist begeistert und erfasst jetzt eifrig ihre Werte. Die Qualität des Passes ist top.",
+      "suggested_improvements": "Review the repeated buyer feedback and improve the product accordingly."
+    }
+  ]
+}

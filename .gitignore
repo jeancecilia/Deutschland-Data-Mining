@@ -1,0 +1,47 @@
+# Dependencies
+.next/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+frontend/.next/
+frontend/node_modules/
+
+# Environment
+.env
+
+# Build artifacts
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# Chrome automation data
+.chrome-automation-data/
+.chrome-automation-live/
+.host-bridge-venv/
+.host-browser-profile/
+.host-chrome-fresh/
+
+# Generated reports (large binary files)
+backend/generated_reports/*.pdf
+backend/generated_reports/*.csv
+backend/generated_reports/amazon-storage-state.json
+
+# Docker volumes
+postgres/
+redis/
+scheduler/
+worker/
+
+# OS
+Thumbs.db
+.DS_Store
+
