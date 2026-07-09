@@ -95,8 +95,14 @@ export function DiscoveryView({ data }: { data: DashboardData }) {
               <a href="http://localhost:8000/api/v1/discovery-pipeline/graph" target="_blank" style={{ fontSize: 12 }}>
                 🔗 Topic Graph
               </a>
-              <a href="http://localhost:8000/api/v1/discovery-pipeline/candidates" target="_blank" style={{ fontSize: 12 }}>
-                🎯 Pipeline Candidates
+              <a href="http://localhost:8000/api/v1/discovery-pipeline/candidates/validation-queue?status=queued&limit=100" target="_blank" style={{ fontSize: 12, color: "var(--green)" }}>
+                ✅ Queued Candidates
+              </a>
+              <a href="http://localhost:8000/api/v1/discovery-pipeline/candidates/validation-queue?status=manual_review&limit=200" target="_blank" style={{ fontSize: 12, color: "var(--orange)" }}>
+                👀 Manual Review
+              </a>
+              <a href="http://localhost:8000/api/v1/discovery-pipeline/candidates/validation-queue?status=rejected_pre_validation&limit=200" target="_blank" style={{ fontSize: 12, color: "var(--muted)" }}>
+                ❌ Rejected Queue
               </a>
             </div>
           </div>
