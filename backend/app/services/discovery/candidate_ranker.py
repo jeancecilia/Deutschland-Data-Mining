@@ -359,35 +359,54 @@ def rank_candidates_for_validation(
         if canonical:
             is_canonical = normalize_entity_name(name) == normalize_entity_name(canonical)
 
-        # Rule 1: "Hilfe bei"/"Schritt-für-Schritt" suffix variants → never queued (unconditional)
-        is_suffix_variant = "hilfe bei" in name.lower() or "schritt-für-schritt" in name.lower()
-        if is_suffix_variant and pre_val >= 70:
-            pre_val = 69
-
-        # Rule 2: Explicitly marked non-queue-eligible → max manual_review
+        lower_name = name.lower()
         queue_eligible = se.get("queue_eligible", True)
-        if queue_eligible is False and pre_val >= 70:
-            pre_val = 69
 
-        # Rule 3: For micro-domain-sourced candidates, only the canonical version is queue-eligible.
-        if canonical and not is_canonical and pre_val >= 70:
-            pre_val = 69
+        is_suffix_variant = (
+            "hilfe bei" in lower_name
+            or "schritt-für-schritt" in lower_name
+        )
 
-        # Rule 4: No canonical_micro_domain (bulk composer, etc.) → max manual_review
-        if not canonical and pre_val >= 70:
-            pre_val = 69
+        has_duplicate_format = any([
+            "checkliste checkliste" in lower_name,
+            "tagebuch tagebuch" in lower_name,
+            "arbeitsbuch arbeitsbuch" in lower_name,
+            "planer planer" in lower_name,
+            "ratgeber ratgeber" in lower_name,
+        ])
 
-        # Rule 5: High duplication (fresh score) → cap score (canonical exempt)
+        has_double_fuer = "für für" in lower_name
+        has_no_metadata = not canonical and not macro and not micro
+        too_long = len(name.split()) > 8
+
+        # ── Hard rejection: should not even be manual_review ──
+        if (
+            is_suffix_variant
+            or has_duplicate_format
+            or has_double_fuer
+            or has_no_metadata
+        ):
+            pre_val = min(pre_val, 59)
+
+        # Non-canonical v2 variants: not queued, but can remain manual_review if clean
+        elif canonical and not is_canonical:
+            pre_val = min(pre_val, 69)
+
+        # Explicit non-queue candidates: max manual_review
+        elif queue_eligible is False:
+            pre_val = min(pre_val, 69)
+
+        # Too long: max manual_review, unless already hard-rejected
+        elif too_long:
+            pre_val = min(pre_val, 69)
+
+        # High duplication: only canonical candidates may survive
         if isinstance(dup, (int, float)) and dup >= 80 and not is_canonical:
             pre_val = min(pre_val, 59)
 
-        # Rule 6: Medium duplication (fresh score) → max manual_review (canonical exempt)
-        if isinstance(dup, (int, float)) and dup >= 50 and not is_canonical and pre_val >= 70:
-            pre_val = 69
-
-        # Rule 7: Too many words → downgrade
-        if len(name.split()) > 8 and pre_val >= 70:
-            pre_val = 69
+        # Medium duplication: max manual_review
+        if isinstance(dup, (int, float)) and dup >= 50 and not is_canonical:
+            pre_val = min(pre_val, 69)
 
         all_scores.append(pre_val)
         top_score = max(top_score, pre_val)
