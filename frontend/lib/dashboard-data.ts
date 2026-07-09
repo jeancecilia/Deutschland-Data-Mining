@@ -687,18 +687,18 @@ export async function loadOverviewData(): Promise<DashboardData> {
 
 export async function loadDiscoveryPageData(): Promise<DashboardData> {
   const [
-    runtimeStatus,
     discoveryUniverse,
     discoveryCandidates,
     discoveryPipelineOverview,
     discoveryPipelineCandidates
   ] = await Promise.all([
-    getRuntimeStatus(),
     getDiscoveryUniverse(),
     getDiscoveryCandidates(),
     getDiscoveryPipelineOverview(),
     getDiscoveryPipelineCandidates()
   ]);
+  // Runtime status is slow (Chrome bridge) — fetch async, don't block page load
+  const runtimeStatus = null;
 
   return buildDashboardData({
     runtimeStatus,
