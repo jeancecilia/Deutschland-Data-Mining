@@ -99,6 +99,34 @@ def compute_opportunity_scorecard(
     review_clusters: list[ReviewCluster],
     bsr_histories: list[list[int]],
 ) -> OpportunityScorecard:
+    # ── Guard: refuse final scoring when enrichment is missing ──
+    enrichment_missing = (
+        (not top_review_counts or all(c == 0 for c in top_review_counts))
+        and (not top_ratings or all(r == 0.0 for r in top_ratings))
+        and (not top_prices or all(p == 0.0 for p in top_prices))
+        and (not bsr_histories or all(not h or all(b == 0 for b in h) for h in bsr_histories))
+    )
+    if enrichment_missing:
+        return OpportunityScorecard(
+            keyword_specificity_score=0,
+            new_entrant_signal=0,
+            review_insight_score=0,
+            demand_score=0,
+            saturation_risk=0,
+            entry_feasibility_score=0,
+            review_wall_risk=0,
+            differentiation_score=0,
+            ai_slop_score=0,
+            brand_dominance_risk=0,
+            content_complexity_risk=0,
+            compliance_risk=0,
+            price_compression_risk=0,
+            authority_risk=0,
+            research_effort_score=0,
+            final_score=0,
+            explanation="Search-only validation complete. Detail enrichment missing. Do not use for final GO/NO-GO.",
+        )
+
     keyword_specificity_score = compute_keyword_specificity_score(keyword_text)
     new_entrant_signal = _new_entrant_signal(top_review_counts, top_positions)
     review_insight_score = _review_insight_score(review_clusters)
