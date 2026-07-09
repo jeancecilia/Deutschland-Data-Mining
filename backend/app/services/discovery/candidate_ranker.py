@@ -354,7 +354,7 @@ def rank_candidates_for_validation(
         pre_val += compound_boost + generic_penalty
         pre_val = max(0, min(100, pre_val))
         # ── Queued Gating: prevent old broad/template candidates from entering queue ──
-        canonical = str(se.get("canonical_micro_domain") or se.get("micro_domain") or "")
+        canonical = str(se.get("canonical_micro_domain") or "")
         is_canonical = False
         if canonical:
             is_canonical = normalize_entity_name(name) == normalize_entity_name(canonical)
