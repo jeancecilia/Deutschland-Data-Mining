@@ -352,6 +352,33 @@ def rank_candidates_for_validation(
         # Apply compound boost and generic penalty directly for real impact
         pre_val += compound_boost + generic_penalty
         pre_val = max(0, min(100, pre_val))
+        # ── Queued Gating: prevent old broad/template candidates from entering queue ──
+        canonical = str(se.get("canonical_micro_domain", ""))
+        has_metadata = bool(macro) or bool(canonical)
+        dup_score = se.get("duplication_score", 0)
+        has_help_suffix = "hilfe bei" in name.lower() or "schritt-für-schritt" in name.lower()
+
+        # Rule 1: No domain metadata → never queued
+        if not has_metadata and pre_val >= 70:
+            pre_val = 69
+
+        # Rule 2: High duplication → cap score
+        if isinstance(dup_score, (int, float)) and dup_score >= 80 and not canonical:
+            pre_val = min(pre_val, 59)
+
+        # Rule 3: Medium duplication → max manual_review (except canonical candidates)
+        if isinstance(dup_score, (int, float)) and dup_score >= 50 and not canonical:
+            if pre_val >= 70:
+                pre_val = 69
+
+        # Rule 4: "Hilfe bei"/"Schritt-für-Schritt" suffixes → prefer canonical
+        if has_help_suffix and canonical and pre_val >= 70:
+            pre_val = 69
+
+        # Rule 5: Too many words → downgrade
+        if len(name.split()) > 8 and pre_val >= 70:
+            pre_val = 69
+
         all_scores.append(pre_val)
         top_score = max(top_score, pre_val)
 
