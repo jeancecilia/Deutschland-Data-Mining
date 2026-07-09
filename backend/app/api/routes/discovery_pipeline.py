@@ -293,7 +293,7 @@ def compose_candidates(
     min_domains: int = Query(default=50, ge=1, le=200),
     max_domains: int = Query(default=100, ge=1, le=2000),
     max_micro_domains: int = Query(default=10000, ge=1, le=20000),
-    micro_domain_source: str = Query(default="micro_domain_catalog_10k_de"),
+    micro_domain_source: str = Query(default="micro_domain_catalog_10k_de_v2"),
     db: Session = Depends(get_db),
 ) -> dict:
     if use_micro_domains:

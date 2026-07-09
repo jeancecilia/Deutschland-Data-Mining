@@ -265,7 +265,7 @@ def compose_micro_domain_candidates(
     limit: int = 30000,
     max_candidates_per_micro_domain: int = 3,
     max_micro_domains: int = 10000,
-    source: str = "micro_domain_catalog_10k_de",
+    source: str = "micro_domain_catalog_10k_de_v2",
 ) -> DomainComposeResult:
     """Generate candidates from the micro-domain catalog.
 
