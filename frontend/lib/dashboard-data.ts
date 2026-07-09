@@ -555,7 +555,7 @@ async function getDiscoveryPipelineOverview(): Promise<DiscoveryPipelineOverview
 
 async function getDiscoveryPipelineCandidates(): Promise<PipelineCandidate[]> {
   try {
-    const response = await fetch(`${apiBaseUrl}/api/v1/discovery-pipeline/candidates?limit=500`, {
+    const response = await fetch(`${apiBaseUrl}/api/v1/discovery-pipeline/candidates?limit=100`, {
       cache: "no-store"
     });
     if (!response.ok) {
