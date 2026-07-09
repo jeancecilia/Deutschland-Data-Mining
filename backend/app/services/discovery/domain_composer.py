@@ -287,12 +287,13 @@ def compose_micro_domain_candidates(
 
     existing_names: set[str] = set(db.scalars(sa_select(NicheCandidate.normalized_name)))
 
+    # Only generate clean, queue-eligible variants.
+    # "Hilfe bei ..." and "Schritt-für-Schritt" suffixes are removed —
+    # they create noisy duplication of the canonical candidate.
     MICRO_TEMPLATES = [
         "{topic} {format}",
         "{topic} für {audience}",
         "{topic} {format} für {audience}",
-        "{topic} Hilfe bei {problem}",
-        "{topic} Schritt-für-Schritt",
     ]
 
     created_total = 0
@@ -390,7 +391,11 @@ def compose_micro_domain_candidates(
                     "topic": eid, "domain": macro,
                     "macro_domain": macro, "subdomain": sub,
                     "micro_domain": ename,
-                    "source": "micro_domain_catalog_10k_de",
+                    "canonical_micro_domain": ename,
+                    "is_curated": bool(meta.get("is_curated", False)),
+                    "queue_eligible": False,
+                    "variant_type": "generated_variant",
+                    "source": meta.get("source", "micro_domain_catalog_10k_de"),
                 },
                 confidence=50,
                 risk_level="low",

@@ -12,6 +12,7 @@ from collections import Counter
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.services.discovery.entity_normalizer import normalize_entity_name
 from app.services.discovery.format_fit_rules import score_format_fit
 
 HIGH_INTENT_WORDS = {
@@ -353,29 +354,33 @@ def rank_candidates_for_validation(
         pre_val += compound_boost + generic_penalty
         pre_val = max(0, min(100, pre_val))
         # ── Queued Gating: prevent old broad/template candidates from entering queue ──
-        canonical = str(se.get("canonical_micro_domain", ""))
-        has_metadata = bool(macro) or bool(canonical)
-        dup_score = se.get("duplication_score", 0)
-        has_help_suffix = "hilfe bei" in name.lower() or "schritt-für-schritt" in name.lower()
+        canonical = str(se.get("canonical_micro_domain") or se.get("micro_domain") or "")
 
-        # Rule 1: No domain metadata → never queued
-        if not has_metadata and pre_val >= 70:
+        # Rule 1: "Hilfe bei"/"Schritt-für-Schritt" suffix variants → never queued (unconditional)
+        is_suffix_variant = "hilfe bei" in name.lower() or "schritt-für-schritt" in name.lower()
+        if is_suffix_variant and pre_val >= 70:
             pre_val = 69
 
-        # Rule 2: High duplication → cap score
-        if isinstance(dup_score, (int, float)) and dup_score >= 80 and not canonical:
-            pre_val = min(pre_val, 59)
-
-        # Rule 3: Medium duplication → max manual_review (except canonical candidates)
-        if isinstance(dup_score, (int, float)) and dup_score >= 50 and not canonical:
-            if pre_val >= 70:
+        # Rule 2: For micro-domain-sourced candidates, only the canonical version is queue-eligible.
+        # Candidates from other sources (bulk domain composer, etc.) pass through.
+        if canonical:
+            is_canonical = normalize_entity_name(name) == normalize_entity_name(canonical)
+            if not is_canonical and pre_val >= 70:
                 pre_val = 69
 
-        # Rule 4: "Hilfe bei"/"Schritt-für-Schritt" suffixes → prefer canonical
-        if has_help_suffix and canonical and pre_val >= 70:
+        # Rule 3: No canonical_micro_domain (bulk composer, etc.) → max manual_review
+        if not canonical and pre_val >= 70:
             pre_val = 69
 
-        # Rule 5: Too many words → downgrade
+        # Rule 4: High duplication (fresh score) → cap score (canonical exempt)
+        if isinstance(dup, (int, float)) and dup >= 80 and not is_canonical:
+            pre_val = min(pre_val, 59)
+
+        # Rule 5: Medium duplication (fresh score) → max manual_review (canonical exempt)
+        if isinstance(dup, (int, float)) and dup >= 50 and not is_canonical and pre_val >= 70:
+            pre_val = 69
+
+        # Rule 6: Too many words → downgrade
         if len(name.split()) > 8 and pre_val >= 70:
             pre_val = 69
 
