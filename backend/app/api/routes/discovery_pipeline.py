@@ -293,6 +293,7 @@ def compose_candidates(
     min_domains: int = Query(default=50, ge=1, le=200),
     max_domains: int = Query(default=100, ge=1, le=2000),
     max_micro_domains: int = Query(default=10000, ge=1, le=20000),
+    micro_domain_source: str = Query(default="micro_domain_catalog_10k_de"),
     db: Session = Depends(get_db),
 ) -> dict:
     if use_micro_domains:
@@ -302,6 +303,7 @@ def compose_candidates(
             limit=limit,
             max_candidates_per_micro_domain=max_candidates_per_micro_domain,
             max_micro_domains=max_micro_domains,
+            source=micro_domain_source,
         )
         return {
             "created": result.created,

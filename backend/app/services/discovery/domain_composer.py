@@ -265,6 +265,7 @@ def compose_micro_domain_candidates(
     limit: int = 30000,
     max_candidates_per_micro_domain: int = 3,
     max_micro_domains: int = 10000,
+    source: str = "micro_domain_catalog_10k_de",
 ) -> DomainComposeResult:
     """Generate candidates from the micro-domain catalog.
 
@@ -277,10 +278,10 @@ def compose_micro_domain_candidates(
     # Load micro-domain entities
     micro_rows = db.execute(text(
         "SELECT id, name, metadata_json FROM discovery_entities "
-        "WHERE metadata_json->>'source' = 'micro_domain_catalog_10k_de' "
+        "WHERE metadata_json->>'source' = :source "
         "ORDER BY metadata_json->>'priority' DESC "
         "LIMIT :limit"
-    ), {"limit": max_micro_domains}).fetchall()
+    ), {"limit": max_micro_domains, "source": source}).fetchall()
 
     if not micro_rows:
         return DomainComposeResult(0, 0, 0, 0, 0)
