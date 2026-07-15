@@ -69,36 +69,42 @@ def check_constraint(
 ) -> ConstraintCheckResult:
     """Check if two sets of entity types can be combined.
 
-    Returns the most restrictive result found.
+    Evaluates all pairs and returns the most restrictive result found.
+    Severity: block > flag_risk > downgrade > allow
     """
-    # Check all pairs between the two groups
-    for type_a in entity_types_a:
-        for type_b in entity_types_b:
-            key = (type_a, type_b)
-            if key in CONSTRAINT_RULES:
-                action, reason = CONSTRAINT_RULES[key]
-                if action == CONSTRAINT_BLOCK:
-                    return ConstraintCheckResult(
-                        allowed=False,
-                        action=action,
-                        reason=reason,
-                        entity_types_involved=[type_a, type_b],
-                    )
-                if action == CONSTRAINT_FLAG_RISK:
-                    return ConstraintCheckResult(
-                        allowed=True,
-                        action=action,
-                        reason=reason,
-                        entity_types_involved=[type_a, type_b],
-                    )
+    SEVERITY = {
+        CONSTRAINT_BLOCK: 4,
+        CONSTRAINT_FLAG_RISK: 3,
+        CONSTRAINT_DOWNGRADE: 2,
+        CONSTRAINT_ALLOW: 1,
+    }
 
-    # No specific rule found → allow by default
-    return ConstraintCheckResult(
+    best_result = ConstraintCheckResult(
         allowed=True,
         action=CONSTRAINT_ALLOW,
         reason="Keine Restriktion gefunden",
         entity_types_involved=entity_types_a + entity_types_b,
     )
+    best_severity = SEVERITY[CONSTRAINT_ALLOW]
+
+    for type_a in entity_types_a:
+        for type_b in entity_types_b:
+            key = (type_a, type_b)
+            if key in CONSTRAINT_RULES:
+                action, reason = CONSTRAINT_RULES[key]
+                severity = SEVERITY.get(action, 0)
+                if severity > best_severity:
+                    best_result = ConstraintCheckResult(
+                        allowed=(action != CONSTRAINT_BLOCK),
+                        action=action,
+                        reason=reason,
+                        entity_types_involved=[type_a, type_b],
+                    )
+                    best_severity = severity
+                    if action == CONSTRAINT_BLOCK:
+                        return best_result  # block is absolute, return early
+
+    return best_result
 
 
 def is_too_generic(phrase: str) -> bool:
