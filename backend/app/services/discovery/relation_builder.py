@@ -193,6 +193,7 @@ def build_entity_relations(
     domain_rows = db.execute(text(
         "SELECT DISTINCT metadata_json->>'domain' as domain FROM discovery_entities "
         "WHERE metadata_json->>'domain' IS NOT NULL AND metadata_json->>'domain' != '' "
+        "ORDER BY metadata_json->>'domain' ASC "
         "LIMIT :max_domains"
     ), {"max_domains": max_domains}).fetchall()
     domains = [str(r[0]) for r in domain_rows if r[0]]

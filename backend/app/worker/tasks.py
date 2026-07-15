@@ -163,10 +163,40 @@ def discovery_promote_candidates() -> dict:
         db.close()
 
 
-@celery_app.task(name="app.worker.tasks.discovery_full_pipeline")
+# PostgreSQL advisory lock ID for the full discovery pipeline
+_FULL_PIPELINE_LOCK_ID = 1001
+
+
+def _acquire_advisory_lock(db, lock_id: int) -> bool:
+    """Try to acquire a PostgreSQL advisory lock. Returns True if acquired."""
+    from sqlalchemy import text
+    result = db.execute(text("SELECT pg_try_advisory_lock(:id)"), {"id": lock_id}).scalar()
+    return bool(result)
+
+
+def _release_advisory_lock(db, lock_id: int) -> None:
+    """Release a PostgreSQL advisory lock."""
+    from sqlalchemy import text
+    db.execute(text("SELECT pg_advisory_unlock(:id)"), {"id": lock_id})
+
+
+@celery_app.task(
+    name="app.worker.tasks.discovery_full_pipeline",
+    time_limit=3600,
+    soft_time_limit=3300,
+    acks_late=True,
+)
 def discovery_full_pipeline() -> dict:
-    """Run the full initial discovery pipeline sequentially."""
-    result = {
+    """Run the full initial discovery pipeline sequentially.
+
+    Uses a PostgreSQL advisory lock to prevent overlapping runs.
+    """
+    db = SessionLocal()
+    if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
+        db.close()
+        return {"status": "skipped", "reason": "Another pipeline run is in progress."}
+
+    result: dict[str, object] = {
         "import_seeds": None,
         "extract_entities": None,
         "build_relations": None,
@@ -175,7 +205,6 @@ def discovery_full_pipeline() -> dict:
         "promote_candidates": None,
     }
 
-    db = SessionLocal()
     try:
         from app.services.discovery import (
             import_all_seed_universes,
@@ -232,4 +261,5 @@ def discovery_full_pipeline() -> dict:
         result["timestamp"] = datetime.now(UTC).isoformat()
         return result
     finally:
+        _release_advisory_lock(db, _FULL_PIPELINE_LOCK_ID)
         db.close()

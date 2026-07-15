@@ -199,17 +199,22 @@ def _refresh_book_snapshot_if_due(
 
     now = datetime.now(UTC)
     if latest_snapshot is not None:
-        latest_captured_at = latest_snapshot.captured_at
-        if latest_captured_at.tzinfo is None:
-            latest_captured_at = latest_captured_at.replace(tzinfo=UTC)
-        age = now - latest_captured_at
-        if age < timedelta(hours=min_hours_between_snapshots):
-            rounded_hours = round(age.total_seconds() / 3600, 1)
-            return (
-                "skipped",
-                latest_snapshot,
-                f"Latest snapshot is only {rounded_hours}h old.",
-            )
+        # If existing snapshot has no actual BSR value, treat it as stale
+        # regardless of age — empty snapshots must not block fresh collection.
+        if latest_snapshot.bsr_main is None and latest_snapshot.category_bsr_1 is None:
+            pass  # stale empty snapshot, proceed to refresh
+        else:
+            latest_captured_at = latest_snapshot.captured_at
+            if latest_captured_at.tzinfo is None:
+                latest_captured_at = latest_captured_at.replace(tzinfo=UTC)
+            age = now - latest_captured_at
+            if age < timedelta(hours=min_hours_between_snapshots):
+                rounded_hours = round(age.total_seconds() / 3600, 1)
+                return (
+                    "skipped",
+                    latest_snapshot,
+                    f"Latest snapshot is only {rounded_hours}h old.",
+                )
 
     try:
         detail = collect_and_store_book_details(db, book)
@@ -219,4 +224,6 @@ def _refresh_book_snapshot_if_due(
     snapshot = None
     if detail.latest_bsr_snapshot is not None:
         snapshot = db.get(BSRSnapshot, detail.latest_bsr_snapshot.id)
+    if snapshot is None:
+        return "failed", None, "No BSR data found on detail page."
     return "refreshed", snapshot, None
