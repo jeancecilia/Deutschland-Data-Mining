@@ -38,11 +38,11 @@ backend/generated_reports/amazon-storage-state.json
 # Celery runtime
 backend/celerybeat-schedule
 
-# Docker volumes
-postgres/
-redis/
-scheduler/
-worker/
+# Docker volumes (root-level only — do NOT match app packages)
+/postgres/
+/redis/
+/scheduler/
+/worker/
 
 # OS
 Thumbs.db
