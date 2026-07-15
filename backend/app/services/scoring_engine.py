@@ -99,14 +99,22 @@ def compute_opportunity_scorecard(
     review_clusters: list[ReviewCluster],
     bsr_histories: list[list[int]],
 ) -> OpportunityScorecard:
-    # ── Guard: refuse final scoring when enrichment is missing ──
-    enrichment_missing = (
-        (not top_review_counts or all(c == 0 for c in top_review_counts))
-        and (not top_ratings or all(r == 0.0 for r in top_ratings))
-        and (not top_prices or all(p == 0.0 for p in top_prices))
-        and (not bsr_histories or all(not h or all(b == 0 for b in h) for h in bsr_histories))
+    # ── Guard: refuse final scoring when enrichment coverage is insufficient ──
+    total_competitors = max(len(top_review_counts), len(top_ratings), len(top_prices), len(bsr_histories))
+    books_with_reviews = sum(1 for c in top_review_counts if c > 0)
+    books_with_ratings = sum(1 for r in top_ratings if r > 0)
+    books_with_bsr = sum(1 for h in bsr_histories if h and any(b > 0 for b in h))
+    review_coverage = books_with_reviews / max(total_competitors, 1)
+    rating_coverage = books_with_ratings / max(total_competitors, 1)
+    bsr_coverage = books_with_bsr / max(total_competitors, 1)
+
+    insufficient_data = (
+        total_competitors < 5
+        or review_coverage < 0.6
+        or rating_coverage < 0.6
+        or bsr_coverage < 0.5
     )
-    if enrichment_missing:
+    if insufficient_data:
         return OpportunityScorecard(
             keyword_specificity_score=0,
             new_entrant_signal=0,
@@ -124,7 +132,14 @@ def compute_opportunity_scorecard(
             authority_risk=0,
             research_effort_score=0,
             final_score=0,
-            explanation="Search-only validation complete. Detail enrichment missing. Do not use for final GO/NO-GO.",
+            explanation=(
+                f"Insufficient data for reliable scoring: "
+                f"competitors={total_competitors}, "
+                f"review_coverage={review_coverage:.0%}, "
+                f"rating_coverage={rating_coverage:.0%}, "
+                f"bsr_coverage={bsr_coverage:.0%}. "
+                f"Require ≥5 competitors, ≥60% review/rating coverage, ≥50% BSR coverage."
+            ),
         )
 
     keyword_specificity_score = compute_keyword_specificity_score(keyword_text)

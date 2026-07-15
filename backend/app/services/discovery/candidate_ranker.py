@@ -301,6 +301,13 @@ def rank_candidates_for_validation(
     max_per_subdomain: int = 30,
     max_per_micro_domain: int = 3,
 ) -> RankResult:
+    """Two-phase ranking: score all candidates first, then sort by score,
+    then apply domain quotas in score-descending order.
+
+    Thresholds:
+        queued_threshold  = min_score
+        manual_threshold  = max(0, min_score - 10)
+    """
     from sqlalchemy import select as sa_select
     from app.models.discovery_pipeline import NicheCandidate
 
@@ -320,15 +327,12 @@ def rank_candidates_for_validation(
         if macro:
             domain_index.setdefault(str(macro), []).append((c.candidate_name, c.id))
 
-    macro_counts: dict[str, int] = {}
-    sub_counts: dict[str, int] = {}
-    micro_counts: dict[str, int] = {}
+    queue_threshold = min_score
+    manual_threshold = max(0, min_score - 10)
 
-    queued = 0
-    manual_review = 0
-    rejected = 0
+    # ── Phase 1: score every candidate without assigning status ──
+    scored: list[tuple[int, NicheCandidate, dict, int, int, int, int, int, int, int]] = []
     all_scores: list[int] = []
-    top_score = 0
 
     for candidate in candidates:
         se = candidate.source_entities or {}
@@ -353,9 +357,9 @@ def rank_candidates_for_validation(
             dom_fit * 0.10 + fmt_fit * 0.10 - dup * 0.10 +
             aud_fit * 0.10 + fmt_style * 0.10
         )
-        # Apply compound boost and generic penalty directly for real impact
         pre_val += compound_boost + generic_penalty
         pre_val = max(0, min(100, pre_val))
+
         # ── Queued Gating: prevent old broad/template candidates from entering queue ──
         canonical = str(se.get("canonical_micro_domain") or "")
         is_canonical = False
@@ -365,9 +369,6 @@ def rank_candidates_for_validation(
         lower_name = name.lower()
         queue_eligible = se.get("queue_eligible", True)
 
-        # Only flag as suffix-variant when the metadata explicitly marks it
-        # as auto-generated. Natural phrases like "Erste Hilfe bei Kindern"
-        # or legitimate "Schritt-für-Schritt" guides must not be hard-rejected.
         is_auto_generated_variant = se.get("variant_type") == "generated_variant"
         is_suffix_variant = (
             is_auto_generated_variant
@@ -386,7 +387,7 @@ def rank_candidates_for_validation(
         has_no_metadata = not canonical and not macro and not micro
         too_long = len(name.split()) > 8
 
-        # ── Hard rejection: should not even be manual_review ──
+        # Hard rejection
         if (
             is_suffix_variant
             or has_duplicate_format
@@ -394,33 +395,40 @@ def rank_candidates_for_validation(
             or has_no_metadata
         ):
             pre_val = min(pre_val, 59)
-
-        # Non-canonical v2 variants: not queued, but can remain manual_review if clean
         elif canonical and not is_canonical:
             pre_val = min(pre_val, 69)
-
-        # Explicit non-queue candidates: max manual_review
         elif queue_eligible is False:
             pre_val = min(pre_val, 69)
-
-        # Too long: max manual_review, unless already hard-rejected
         elif too_long:
             pre_val = min(pre_val, 69)
 
-        # High duplication: only canonical candidates may survive
         if isinstance(dup, (int, float)) and dup >= 80 and not is_canonical:
             pre_val = min(pre_val, 59)
-
-        # Medium duplication: max manual_review
         if isinstance(dup, (int, float)) and dup >= 50 and not is_canonical:
             pre_val = min(pre_val, 69)
 
         all_scores.append(pre_val)
+        scored.append((pre_val, candidate, se, nat, spec, intent, dom_fit, fmt_fit, dup, aud_fit, fmt_style))
+
+    # ── Phase 2: sort by score desc, then apply quotas ──
+    scored.sort(key=lambda x: (-x[0], x[1].id))
+
+    macro_counts: dict[str, int] = {}
+    sub_counts: dict[str, int] = {}
+    micro_counts: dict[str, int] = {}
+    queued = 0
+    manual_review = 0
+    rejected = 0
+    top_score = 0
+
+    for pre_val, candidate, se, nat, spec, intent, dom_fit, fmt_fit, dup, aud_fit, fmt_style in scored:
+        macro = str(se.get("macro_domain", se.get("domain", "")))
+        sub = str(se.get("subdomain", ""))
+        micro = str(se.get("micro_domain", ""))
         top_score = max(top_score, pre_val)
 
-        # Calibrated thresholds: 70+ queued, 60-69 manual_review, <60 rejected
         status = "rejected_pre_validation"
-        if pre_val >= 70:
+        if pre_val >= queue_threshold:
             if max_per_macro_domain and macro and macro_counts.get(macro, 0) >= max_per_macro_domain:
                 status = "manual_review"
             elif max_per_subdomain and sub and sub_counts.get(sub, 0) >= max_per_subdomain:
@@ -432,7 +440,7 @@ def rank_candidates_for_validation(
                 macro_counts[macro] = macro_counts.get(macro, 0) + 1
                 sub_counts[sub] = sub_counts.get(sub, 0) + 1
                 micro_counts[micro] = micro_counts.get(micro, 0) + 1
-        elif pre_val >= 60:
+        elif pre_val >= manual_threshold:
             status = "manual_review"
         else:
             status = "rejected_pre_validation"

@@ -41,13 +41,20 @@ def run_seed_pipeline(
         )
     )
 
+    from datetime import UTC, datetime, timedelta
+    SEARCH_RUN_MAX_AGE_HOURS = 24
+
     keywords_to_collect = related_keywords[: max(1, collect_related_limit)]
     collected_search_runs = []
     for keyword in keywords_to_collect:
         if reuse_existing_runs:
             existing_runs = list_search_runs_for_keyword(db, keyword.id)
-            if existing_runs:
-                collected_search_runs.append(existing_runs[0])
+            for run in existing_runs:
+                age = datetime.now(UTC) - run.run_at
+                if age < timedelta(hours=SEARCH_RUN_MAX_AGE_HOURS):
+                    collected_search_runs.append(run)
+                    break
+            if collected_search_runs and collected_search_runs[-1].keyword_id == keyword.id:
                 continue
 
         try:
