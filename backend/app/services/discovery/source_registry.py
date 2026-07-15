@@ -268,13 +268,24 @@ def import_seed_csv_to_raw_items(
                 continue
             existing_texts.add(name)
 
+            # Preserve CSV metadata (domain, subdomain, audience, etc.)
+            meta: dict[str, object] = {}
+            for key, value in row.items():
+                stripped = str(value).strip() if value else ""
+                if key in ("name", "entity_type", "priority") or not stripped:
+                    continue
+                meta[key] = stripped
+            if entity_type:
+                meta["entity_type_hint"] = entity_type
+            meta["priority"] = priority
+
             item = RawDiscoveryItem(
                 discovery_source_id=source.id,
                 raw_text=name,
                 language=source.language,
                 country=source.country,
                 confidence=max(50, min(100, priority)),
-                metadata_json={"entity_type_hint": entity_type, "priority": priority} if entity_type else None,
+                metadata_json=meta if meta else None,
                 status="new",
                 collected_at=now,
             )

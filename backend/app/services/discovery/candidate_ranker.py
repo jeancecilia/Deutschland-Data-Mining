@@ -314,7 +314,7 @@ def rank_candidates_for_validation(
     candidates = list(db.scalars(
         sa_select(NicheCandidate).where(
             NicheCandidate.status.in_(["new", "needs_manual_review"])
-        ).limit(limit)
+        ).order_by(NicheCandidate.id.asc()).limit(limit)
     ))
 
     if not candidates:
@@ -465,6 +465,15 @@ def rank_candidates_for_validation(
         new_se["validation_queue_status"] = status
         new_se["validation_priority"] = pre_val
         candidate.source_entities = new_se
+
+        # ── Update lifecycle status to match pre-validation result ──
+        # This prevents unranked candidates from being fast-validated or promoted.
+        status_map = {
+            "queued": "prevalidation_queued",
+            "manual_review": "needs_manual_review",
+            "rejected_pre_validation": "rejected_pre_validation",
+        }
+        candidate.status = status_map.get(status, candidate.status)
 
     db.commit()
     avg_score = sum(all_scores) / len(all_scores) if all_scores else 0

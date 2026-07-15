@@ -379,11 +379,38 @@ def approve_candidate(
     candidate_id: int,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Approve a candidate for promotion (manual review gate)."""
+    """Approve a candidate for promotion (manual review gate).
+
+    Requires completed pre-validation and populated risk classification.
+    """
     from app.models.discovery_pipeline import NicheCandidate
     candidate = db.get(NicheCandidate, candidate_id)
     if candidate is None:
         raise HTTPException(status_code=404, detail="Candidate not found")
+
+    # Require that pre-validation ranking was completed
+    se = candidate.source_entities or {}
+    validation_status = se.get("validation_queue_status")
+    if not validation_status:
+        raise HTTPException(
+            status_code=400,
+            detail="Candidate has not been pre-validated. Run ranking first.",
+        )
+
+    # Require risk classification
+    if not candidate.risk_category:
+        raise HTTPException(
+            status_code=400,
+            detail="Candidate has no risk classification. Run validation first.",
+        )
+
+    # Require a validation score
+    if se.get("pre_validation_score") is None and candidate.fast_validation_score is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Candidate has no validation score. Run validation first.",
+        )
+
     candidate.status = "approved_for_promotion"
     candidate.promotion_reason = "Manually approved"
     db.add(candidate)
