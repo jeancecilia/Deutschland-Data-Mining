@@ -75,19 +75,19 @@ def main():
     print(f"Has domain column: {has_domain}")
 
     # ---- Row counting and domain validation (sample first 100K) ----
-    print("Sampling rows for domain balance check...")
+    print("Sampling rows for domain balance check (using csv.DictReader)...")
+    import csv, io
+    fh.seek(0)
+    reader = csv.DictReader(io.TextIOWrapper(fh, encoding="utf-8-sig"))
     domain_sample: dict[str, int] = {}
     total_sampled = 0
-    for line in fh:
+    for row in reader:
         total_sampled += 1
         if total_sampled > 100000:
             break
         if has_domain:
-            parts = line.strip().split(",")
-            col_map = {c.strip(): i for i, c in enumerate(cols)}
-            domain_idx = col_map.get("domain")
-            if domain_idx is not None and domain_idx < len(parts):
-                domain = parts[domain_idx].strip()
+            domain = row.get("domain", "").strip()
+            if domain:
                 domain_sample[domain] = domain_sample.get(domain, 0) + 1
     fh.close()
 
@@ -95,24 +95,17 @@ def main():
     if domain_sample:
         total_domains = len(domain_sample)
         max_domain = max(domain_sample.values()) if domain_sample else 0
-        # Estimate total rows from file size (rough: ~60 bytes/row uncompressed, ~4-5x compression)
-        est_total_rows = int(path.stat().st_size * 180)  # rough bytes → rows for gz
-        est_total_rows = max(est_total_rows, total_sampled)  # at least what we sampled
-        max_share = max_domain / est_total_rows if est_total_rows > 0 else 0
+        # Use sampled distribution, not file-size estimate
+        max_share = max_domain / total_sampled if total_sampled > 0 else 0
         print(f"Domains detected (in sample): {total_domains}")
         print(f"Max domain count (in sample): {max_domain}")
-        print(f"Estimated total rows: {est_total_rows:,}")
-        print(f"Estimated max domain share: {max_share:.2%}")
+        print(f"Sampled domain share (max_domain / sampled): {max_share:.2%}")
 
         if max_share > MAX_DOMAIN_SHARE and not args.skip_domain_check:
-            # Double-check with a larger sample if we're unsure
-            if est_total_rows < 500000:
-                print(f"WARNING: Low estimated total — domain share may be inaccurate.")
-            else:
-                print(f"ERROR: Domain imbalance detected! Max domain share {max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
-                print(f"  This dataset is too domain-skewed. Import aborted.")
-                print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
-                sys.exit(1)
+            print(f"ERROR: Domain imbalance detected! Max domain share {max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
+            print(f"  This dataset is too domain-skewed. Import aborted.")
+            print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
+            sys.exit(1)
     else:
         print("WARNING: No domain column found — skipping domain balance check.")
 

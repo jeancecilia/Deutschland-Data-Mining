@@ -157,17 +157,45 @@ def extract_entities_from_raw_items(
         )
     )
 
-    # Load existing entities for dedup
-    existing_entities: dict[str, DiscoveryEntity] = {}
-    for entity in db.scalars(select(DiscoveryEntity)):
-        key = f"{entity.normalized_name}|{entity.entity_type}|{entity.language}"
-        existing_entities[key] = entity
+    # ── Scale-safe: query only entities matching the batch's normalized names ──
+    # Pre-normalize the current batch to build lookup keys
+    batch_norm_keys: set[str] = set()
+    batch_entities: list[tuple[str, str, str, RawDiscoveryItem]] = []  # (norm_name, entity_type, lang, item)
+    for item in items:
+        raw_text = item.raw_text.strip()
+        if not raw_text or len(raw_text) < 2:
+            continue
+        entity_type = _infer_entity_type(raw_text, item.metadata_json) or "topic"
+        norm = normalize_entity_name(raw_text)
+        if norm:
+            key = f"{norm}|{entity_type}|de"
+            batch_norm_keys.add(key)
+            batch_entities.append((norm, entity_type, "de", item))
 
-    # Track aliases in-memory to avoid duplicate key violations within a batch
-    # (SQLAlchemy select() only sees committed rows, not session.new objects)
+    # Query only existing entities that match this batch
+    existing_entities: dict[str, DiscoveryEntity] = {}
+    if batch_norm_keys:
+        for entity in db.scalars(
+            select(DiscoveryEntity).where(
+                DiscoveryEntity.normalized_name.in_(
+                    [k.split("|")[0] for k in batch_norm_keys]
+                )
+            )
+        ):
+            key = f"{entity.normalized_name}|{entity.entity_type}|{entity.language}"
+            if key in batch_norm_keys:
+                existing_entities[key] = entity
+
+    # Query only aliases matching this batch's entity IDs
+    entity_ids = {e.id for e in existing_entities.values()}
     known_aliases: set[tuple[int, str]] = set()
-    for alias in db.scalars(select(DiscoveryEntityAlias)):
-        known_aliases.add((alias.entity_id, alias.alias))
+    if entity_ids:
+        for alias in db.scalars(
+            select(DiscoveryEntityAlias).where(
+                DiscoveryEntityAlias.entity_id.in_(entity_ids)
+            )
+        ):
+            known_aliases.add((alias.entity_id, alias.alias))
 
     created = 0
     updated = 0
