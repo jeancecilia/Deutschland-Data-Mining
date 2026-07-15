@@ -185,6 +185,7 @@ def _score_duplication(
     candidate_name: str, normalized: str,
     macro_domain: str | None,
     domain_candidates: dict[str, list[tuple[str, int]]],
+    candidate_id: int | None = None,
 ) -> int:
     if not macro_domain:
         return 0
@@ -193,7 +194,9 @@ def _score_duplication(
         return 0
     name_words = set(candidate_name.lower().split())
     similar = 0
-    for sib_name, _ in siblings:
+    for sib_name, sib_id in siblings:
+        if candidate_id is not None and sib_id == candidate_id:
+            continue
         sib_words = set(sib_name.lower().split())
         overlap = len(name_words & sib_words) / max(len(name_words), 1)
         if overlap > 0.7:
@@ -339,7 +342,7 @@ def rank_candidates_for_validation(
         intent = _score_intent(name, se)
         dom_fit = _score_domain_fit(se)
         fmt_fit = score_format_fit(name, macro, sub)
-        dup = _score_duplication(name, candidate.normalized_name, macro, domain_index)
+        dup = _score_duplication(name, candidate.normalized_name, macro, domain_index, candidate.id)
         aud_fit = _score_audience_fit(se)
         fmt_style = _score_format_style(name, se)
         compound_boost = _score_compound_kdp_boost(name, se)
@@ -362,9 +365,13 @@ def rank_candidates_for_validation(
         lower_name = name.lower()
         queue_eligible = se.get("queue_eligible", True)
 
+        # Only flag as suffix-variant when the metadata explicitly marks it
+        # as auto-generated. Natural phrases like "Erste Hilfe bei Kindern"
+        # or legitimate "Schritt-für-Schritt" guides must not be hard-rejected.
+        is_auto_generated_variant = se.get("variant_type") == "generated_variant"
         is_suffix_variant = (
-            "hilfe bei" in lower_name
-            or "schritt-für-schritt" in lower_name
+            is_auto_generated_variant
+            and ("hilfe bei" in lower_name or "schritt-für-schritt" in lower_name)
         )
 
         has_duplicate_format = any([
