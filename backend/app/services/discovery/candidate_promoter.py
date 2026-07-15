@@ -101,6 +101,9 @@ def promote_candidates_to_seeds(
             )
         ).first()
         if existing_keyword is not None:
+            candidate.status = "promoted_to_seed"
+            candidate.promotion_reason = "Already promoted (existing keyword)"
+            db.add(candidate)
             skipped += 1
             continue
 

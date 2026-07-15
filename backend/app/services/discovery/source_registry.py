@@ -317,7 +317,19 @@ def import_all_seed_universes(db: Session) -> dict[str, int]:
             source = db.scalars(
                 select(DiscoverySource).where(DiscoverySource.name == entry["source_name"])
             ).first()
+        # Create source if missing (one per manifest entry)
         if source is None:
+            source = DiscoverySource(
+                name=entry["source_name"],
+                source_type=entry["source_type"],
+                language="de",
+                country="de",
+                marketplace="amazon.de",
+                status="active",
+            )
+            db.add(source)
+            db.flush()
+        if not csv_path.exists():
             results[entry["filename"]] = 0
             continue
 
