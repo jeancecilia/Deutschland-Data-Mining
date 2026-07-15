@@ -214,8 +214,9 @@ def import_seed_csv_to_raw_items(
     *,
     entity_type_override: str | None = None,
     min_priority: int = 0,
+    batch_size: int = 5000,
 ) -> int:
-    """Import a seed CSV file into raw_discovery_items.
+    """Import a seed CSV file into raw_discovery_items using batched inserts.
 
     CSV format: name,entity_type,priority
 
@@ -225,10 +226,30 @@ def import_seed_csv_to_raw_items(
         return 0
 
     now = datetime.now(UTC)
-    imported = 0
+
+    # ── Load existing raw_text for this source once (in-memory dedup) ──
+    existing_texts: set[str] = {
+        row[0] for row in db.execute(
+            select(RawDiscoveryItem.raw_text).where(
+                RawDiscoveryItem.discovery_source_id == source.id
+            )
+        ).fetchall()
+    }
 
     with open(csv_path, encoding="utf-8-sig") as fh:
         reader = csv.DictReader(fh)
+        batch: list[RawDiscoveryItem] = []
+        imported = 0
+
+        def _flush():
+            nonlocal imported
+            if not batch:
+                return
+            db.add_all(batch)
+            db.flush()
+            imported += len(batch)
+            batch.clear()
+
         for row in reader:
             name = (row.get("name") or "").strip()
             entity_type = (row.get("entity_type") or entity_type_override or "").strip()
@@ -242,15 +263,10 @@ def import_seed_csv_to_raw_items(
             if priority < min_priority:
                 continue
 
-            # Check duplicate by raw_text + source
-            existing = db.scalars(
-                select(RawDiscoveryItem).where(
-                    RawDiscoveryItem.raw_text == name,
-                    RawDiscoveryItem.discovery_source_id == source.id,
-                )
-            ).first()
-            if existing is not None:
+            # In-memory dedup
+            if name in existing_texts:
                 continue
+            existing_texts.add(name)
 
             item = RawDiscoveryItem(
                 discovery_source_id=source.id,
@@ -262,8 +278,12 @@ def import_seed_csv_to_raw_items(
                 status="new",
                 collected_at=now,
             )
-            db.add(item)
-            imported += 1
+            batch.append(item)
+
+            if len(batch) >= batch_size:
+                _flush()
+
+        _flush()  # final batch
 
     if imported:
         db.commit()
