@@ -439,7 +439,7 @@ def reject_candidate(
 @router.post("/candidates/rank")
 def rank_candidates(
     limit: int = Query(default=5000, ge=100, le=50000),
-    min_score: int = Query(default=60, ge=0, le=100),
+    min_score: int = Query(default=70, ge=0, le=100),
     max_per_macro_domain: int = Query(default=100, ge=1, le=500),
     max_per_subdomain: int = Query(default=30, ge=1, le=100),
     max_per_micro_domain: int = Query(default=3, ge=1, le=20),

@@ -134,8 +134,8 @@ def discovery_fast_validate() -> dict:
     try:
         from app.services.discovery import validate_candidates_fast
         results = validate_candidates_fast(db, limit=100)
-        promoted = sum(1 for r in results if r.recommended_action == "promote_to_seed")
-        rejected = sum(1 for r in results if r.recommended_action == "reject")
+        promoted = sum(1 for r in results if r.recommendation_label == "GO")
+        rejected = sum(1 for r in results if r.recommendation_label in ("NO-GO", "BLOCKED"))
         return {
             "total": len(results),
             "promoted": promoted,
@@ -247,8 +247,8 @@ def discovery_full_pipeline() -> dict:
         val_results = validate_candidates_fast(db, limit=100)
         result["fast_validate"] = {
             "total": len(val_results),
-            "promoted": sum(1 for r in val_results if r.recommended_action == "promote_to_seed"),
-            "rejected": sum(1 for r in val_results if r.recommended_action == "reject"),
+            "promoted": sum(1 for r in val_results if r.recommendation_label == "GO"),
+            "rejected": sum(1 for r in val_results if r.recommendation_label in ("NO-GO", "BLOCKED")),
         }
 
         # Step 6: Promote

@@ -168,9 +168,9 @@ def extract_entities_from_raw_items(
         entity_type = _infer_entity_type(raw_text, item.metadata_json) or "topic"
         norm = normalize_entity_name(raw_text)
         if norm:
-            key = f"{norm}|{entity_type}|de"
+            key = f"{norm}|{entity_type}|{item.language}"
             batch_norm_keys.add(key)
-            batch_entities.append((norm, entity_type, "de", item))
+            batch_entities.append((norm, entity_type, item.language, item))
 
     # Query only existing entities that match this batch
     existing_entities: dict[str, DiscoveryEntity] = {}
