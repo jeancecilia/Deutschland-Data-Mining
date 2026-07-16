@@ -81,28 +81,65 @@ def main():
     # ---- Row counting and domain validation (scan entire file) ----
     print("Scanning rows for domain balance check...")
     domain_sample: dict[str, int] = {}
+    selected_slice_domain_counts: dict[str, int] = {}
     total_sampled = 0
+    rows_with_domain = 0
+    rows_without_domain = 0
+    
     for row in reader:
         total_sampled += 1
+        in_slice = (total_sampled > args.offset and total_sampled <= args.offset + args.limit)
+        
         if has_domain:
             domain = row.get("domain", "").strip()
             if domain:
+                rows_with_domain += 1
                 domain_sample[domain] = domain_sample.get(domain, 0) + 1
+                if in_slice:
+                    selected_slice_domain_counts[domain] = selected_slice_domain_counts.get(domain, 0) + 1
+            else:
+                rows_without_domain += 1
     fh.close()
 
-    max_share = 0
+    if total_sampled == 0:
+        print("ERROR: File is empty (no data rows).")
+        sys.exit(1)
+
+    domain_coverage_percentage = rows_with_domain / total_sampled
     print(f"Sampled rows: {total_sampled:,}")
+    print(f"Rows with domain: {rows_with_domain:,}")
+    print(f"Rows without domain: {rows_without_domain:,}")
+    print(f"Domain coverage: {domain_coverage_percentage:.2%}")
+
+    if domain_coverage_percentage < 0.99:
+        print(f"ERROR: Domain coverage {domain_coverage_percentage:.2%} is below 99% threshold. Bulk file must have domains.")
+        sys.exit(1)
+
+    max_share = 0
     if domain_sample:
         total_domains = len(domain_sample)
         max_domain = max(domain_sample.values()) if domain_sample else 0
-        max_share = max_domain / total_sampled if total_sampled > 0 else 0
+        max_share = max_domain / rows_with_domain if rows_with_domain > 0 else 0
         print(f"Domains detected: {total_domains}")
-        print(f"Max domain count: {max_domain}")
-        print(f"Max domain share: {max_share:.2%}")
+        print(f"Max file domain count: {max_domain}")
+        print(f"Max file domain share: {max_share:.2%}")
 
         if max_share > MAX_DOMAIN_SHARE and not args.skip_domain_check:
-            print(f"ERROR: Domain imbalance detected! Max domain share {max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
+            print(f"ERROR: File domain imbalance detected! Max domain share {max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
             print(f"  This dataset is too domain-skewed. Import aborted.")
+            print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
+            sys.exit(1)
+            
+    selected_slice_max_share = 0
+    if selected_slice_domain_counts:
+        total_slice_domains = sum(selected_slice_domain_counts.values())
+        max_slice_domain_count = max(selected_slice_domain_counts.values()) if selected_slice_domain_counts else 0
+        selected_slice_max_share = max_slice_domain_count / total_slice_domains if total_slice_domains > 0 else 0
+        print(f"Max slice domain share: {selected_slice_max_share:.2%}")
+        
+        if selected_slice_max_share > MAX_DOMAIN_SHARE and not args.skip_domain_check:
+            print(f"ERROR: Slice domain imbalance detected! Max domain share {selected_slice_max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
+            print(f"  This slice is too domain-skewed. Import aborted.")
             print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
             sys.exit(1)
     else:
@@ -247,18 +284,12 @@ def main():
         if etype_counts:
             print(f"Entity types: {dict(sorted(etype_counts.items()))}")
 
-        imported_slice_max_domain_share = 0
-        if domain_counts:
-            total_slice = sum(domain_counts.values())
-            max_slice_domain = max(domain_counts.values())
-            imported_slice_max_domain_share = max_slice_domain / total_slice if total_slice > 0 else 0
-
         return {
             "total_read": total_read,
             "total_inserted": total_inserted,
             "total_skipped": total_skipped,
             "max_share": max_share,
-            "imported_slice_max_domain_share": imported_slice_max_domain_share,
+            "imported_slice_max_domain_share": selected_slice_max_share,
             "source_id": source.id
         }
 
