@@ -416,6 +416,24 @@ def rank_candidates_for_validation(
     macro_counts: dict[str, int] = {}
     sub_counts: dict[str, int] = {}
     micro_counts: dict[str, int] = {}
+
+    # Preload existing queued counts
+    queued_candidates = list(db.scalars(
+        sa_select(NicheCandidate.source_entities).where(
+            NicheCandidate.status == "prevalidation_queued"
+        )
+    ))
+    for se_dict in queued_candidates:
+        se_dict = se_dict or {}
+        macro = str(se_dict.get("macro_domain", se_dict.get("domain", "")))
+        sub = str(se_dict.get("subdomain", ""))
+        micro = str(se_dict.get("micro_domain", ""))
+        if macro:
+            macro_counts[macro] = macro_counts.get(macro, 0) + 1
+        if sub:
+            sub_counts[sub] = sub_counts.get(sub, 0) + 1
+        if micro:
+            micro_counts[micro] = micro_counts.get(micro, 0) + 1
     queued = 0
     manual_review = 0
     rejected = 0

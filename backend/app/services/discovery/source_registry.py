@@ -312,16 +312,11 @@ def import_all_seed_universes(db: Session) -> dict[str, int]:
 
     for entry in SEED_UNIVERSE_MANIFEST:
         csv_path = SEED_UNIVERSE_DIR / entry["filename"]
-        # Resolve by manifest filename first (one source per manifest entry)
         source = db.scalars(
             select(DiscoverySource).where(
                 DiscoverySource.metadata_json["manifest_filename"].as_string() == entry["filename"]
             )
         ).first()
-        if source is None:
-            source = db.scalars(
-                select(DiscoverySource).where(DiscoverySource.name == entry["source_name"])
-            ).first()
         # Create source if missing (one per manifest entry)
         if source is None:
             source = DiscoverySource(

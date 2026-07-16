@@ -418,6 +418,35 @@ def approve_candidate(
     return {"status": "ok", "candidate_id": candidate_id, "new_status": "approved_for_promotion"}
 
 
+@router.post("/candidates/{candidate_id}/approve-for-validation")
+def approve_candidate_for_validation(
+    candidate_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Approve a candidate for validation (move from prevalidation_manual_review to prevalidation_queued)."""
+    from app.models.discovery_pipeline import NicheCandidate
+    candidate = db.get(NicheCandidate, candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+        
+    if candidate.status != "prevalidation_manual_review":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Candidate status is {candidate.status}, must be prevalidation_manual_review",
+        )
+        
+    candidate.status = "prevalidation_queued"
+    
+    # Also update the source entities state so it appears in the queue view
+    se = candidate.source_entities or {}
+    se["validation_queue_status"] = "queued"
+    candidate.source_entities = se
+    
+    db.add(candidate)
+    db.commit()
+    return {"status": "ok", "candidate_id": candidate_id, "new_status": "prevalidation_queued"}
+
+
 @router.post("/candidates/{candidate_id}/reject")
 def reject_candidate(
     candidate_id: int,

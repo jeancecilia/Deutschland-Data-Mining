@@ -226,7 +226,12 @@ def refresh_recent_keyword_search_runs(
             latest_run_at = latest_run.run_at
             if latest_run_at.tzinfo is None:
                 latest_run_at = latest_run_at.replace(tzinfo=UTC)
-            if now - latest_run_at < timedelta(hours=min_hours_between_runs):
+            
+            backoff_hours = min_hours_between_runs
+            if latest_run.status != "completed" or (latest_run.result_count or 0) == 0:
+                backoff_hours = 2
+
+            if now - latest_run_at < timedelta(hours=backoff_hours):
                 skipped_keywords += 1
                 continue
 
