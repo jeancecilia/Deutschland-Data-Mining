@@ -38,6 +38,9 @@ def refresh_recent_search_runs() -> dict[str, int | str]:
 @celery_app.task(name="app.worker.tasks.run_discovery_cycle")
 def run_discovery_cycle_task() -> dict[str, int | str]:
     db = SessionLocal()
+    if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
+        db.close()
+        return {"status": "skipped", "reason": "Another pipeline run is in progress."}
     try:
         cycle = run_discovery_cycle(
             db,
@@ -58,6 +61,7 @@ def run_discovery_cycle_task() -> dict[str, int | str]:
             "timestamp": datetime.now(UTC).isoformat(),
         }
     finally:
+        _release_advisory_lock(db, _FULL_PIPELINE_LOCK_ID)
         db.close()
 
 
@@ -68,11 +72,15 @@ def run_discovery_cycle_task() -> dict[str, int | str]:
 def discovery_import_seeds() -> dict:
     """Import all CSV seed universe files into raw_discovery_items."""
     db = SessionLocal()
+    if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
+        db.close()
+        return {"status": "skipped", "reason": "Another pipeline run is in progress."}
     try:
         from app.services.discovery import import_all_seed_universes
         results = import_all_seed_universes(db)
         return {"status": "ok", "imported": results, "timestamp": datetime.now(UTC).isoformat()}
     finally:
+        _release_advisory_lock(db, _FULL_PIPELINE_LOCK_ID)
         db.close()
 
 

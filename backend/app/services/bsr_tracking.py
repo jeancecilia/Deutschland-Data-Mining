@@ -224,6 +224,12 @@ def _refresh_book_snapshot_if_due(
     snapshot = None
     if detail.latest_bsr_snapshot is not None:
         snapshot = db.get(BSRSnapshot, detail.latest_bsr_snapshot.id)
-    if snapshot is None:
-        return "failed", None, "No BSR data found on detail page."
+    # Only count as refreshed if at least one BSR field has a real value
+    if snapshot is None or (
+        snapshot.bsr_main is None
+        and snapshot.category_bsr_1 is None
+        and snapshot.category_bsr_2 is None
+        and snapshot.category_bsr_3 is None
+    ):
+        return "failed", snapshot, "No BSR data found on detail page."
     return "refreshed", snapshot, None

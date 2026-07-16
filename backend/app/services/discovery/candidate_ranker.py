@@ -313,7 +313,7 @@ def rank_candidates_for_validation(
 
     candidates = list(db.scalars(
         sa_select(NicheCandidate).where(
-            NicheCandidate.status.in_(["new", "needs_manual_review"])
+            NicheCandidate.status == "new"
         ).order_by(NicheCandidate.id.asc()).limit(limit)
     ))
 
