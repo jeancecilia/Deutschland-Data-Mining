@@ -15,7 +15,7 @@ from sqlalchemy import select
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--file", required=True)
-    p.add_argument("--source-name", default="Micro Domain Catalog 10K DE")
+    p.add_argument("--source-name", default="micro_domain_catalog_2k_de_v2")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--batch-size", type=int, default=1000)
     args = p.parse_args()

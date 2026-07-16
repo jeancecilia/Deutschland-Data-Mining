@@ -230,6 +230,13 @@ def extract_entities_from_raw_items(
             # Bump source_count on existing entity
             current_entity.source_count = (current_entity.source_count or 1) + 1
             current_entity.confidence = min(1.0, current_entity.confidence + 0.05)
+            
+            # Merge structured metadata
+            incoming = item.metadata_json or {}
+            existing_meta = current_entity.metadata_json or {}
+            if incoming.get("macro_domain") or not existing_meta.get("macro_domain"):
+                current_entity.metadata_json = {**existing_meta, **incoming}
+                
             db.add(current_entity)
             updated += 1
         else:

@@ -13,7 +13,7 @@ from app.models.discovery_pipeline import RawDiscoveryItem, DiscoveryEntity, Dis
 from app.services.discovery.source_registry import import_all_seed_universes
 from app.services.discovery.entity_extractor import extract_entities_from_raw_items
 from app.services.discovery.relation_builder import build_entity_relations
-from app.services.discovery.domain_composer import compose_micro_domain_candidates
+from app.services.discovery.domain_composer import compose_micro_domain_candidates, compose_domain_aware_candidates
 from app.services.discovery.niche_candidate_composer import compose_niche_candidates
 from app.services.discovery.candidate_ranker import rank_candidates_for_validation
 from app.services.discovery.fast_validator import validate_candidates_fast
@@ -23,10 +23,22 @@ import json
 
 
 def reset_discovery_tables(db):
+    print("Backing up discovery tables to /data/...")
+    try:
+        import pandas as pd
+        engine = db.get_bind()
+        for table in ["discovery_entity_relations", "niche_candidates", "discovery_entities", "raw_discovery_items", "discovery_entity_aliases", "niche_candidate_keywords"]:
+            df = pd.read_sql_table(table, engine)
+            df.to_csv(f"/data/{table}_backup_before_reset.csv", index=False)
+        print("Backup complete.")
+    except Exception as e:
+        print(f"Backup failed: {e}. Skipping backup.")
+    
     print("Resetting discovery tables...")
     # Prevent destructive cascade into collected amazon data (keywords/search_runs)
     db.execute(text("UPDATE keywords SET source_niche_candidate_id = NULL WHERE source_niche_candidate_id IS NOT NULL"))
     
+    db.execute(text("DELETE FROM niche_candidate_keywords"))
     db.execute(text("DELETE FROM discovery_entity_aliases"))
     db.execute(text("DELETE FROM discovery_entity_relations"))
     db.execute(text("DELETE FROM niche_candidates"))
@@ -168,7 +180,7 @@ def run():
             print(f"  Relations: created={rel.created}, skipped={rel.skipped}")
             
             print("\n--- Phase: Graph/Domain-aware Candidate Composition ---")
-            comp_graph = compose_niche_candidates(db, limit=2000)
+            comp_graph = compose_domain_aware_candidates(db, limit=2000, max_candidates_per_domain=100)
             print(f"  Graph Candidates: created={comp_graph.created}, skipped={comp_graph.skipped_blocked}")
             
         print("\n--- Phase: Ranking ---")
