@@ -178,15 +178,23 @@ def run():
             
             old_argv = sys.argv
             sys.argv = ["import_micro_domain_catalog.py", "--file", f"/data/discovery_seed_universes/micro_domains/{args.catalog_source}.csv", "--source-name", args.catalog_source]
-            import_micro_main()
-            sys.argv = old_argv
+            try:
+                import_micro_main()
+            except SystemExit as exc:
+                raise RuntimeError(f"Micro catalog importer exited with {exc.code}") from exc
+            finally:
+                sys.argv = old_argv
             
             if args.bulk_file:
                 print("Importing bulk seed file...")
                 from scripts.import_bulk_seed_file import main as import_bulk_main
                 sys.argv = ["import_bulk_seed_file.py", "--file", args.bulk_file, "--limit", str(args.bulk_limit), "--batch-size", "5000", "--skip-lock"]
-                summary = import_bulk_main()
-                sys.argv = old_argv
+                try:
+                    summary = import_bulk_main()
+                except SystemExit as exc:
+                    raise RuntimeError(f"Bulk importer exited with {exc.code}") from exc
+                finally:
+                    sys.argv = old_argv
                 
                 if summary:
                     # Assertions for bulk file
@@ -198,7 +206,9 @@ def run():
                     if processed < expected_target * 0.99:
                         raise RuntimeError(f"Bulk import processed {processed} (inserted+skipped) which is less than 99% of expected {expected_target}")
                     if summary["max_share"] > 0.015:
-                        raise RuntimeError(f"Bulk import domain imbalance: {summary['max_share']:.2%} exceeds 1.5%")
+                        raise RuntimeError(f"Bulk import file domain imbalance: {summary['max_share']:.2%} exceeds 1.5%")
+                    if summary.get("imported_slice_max_domain_share", 0) > 0.015:
+                        raise RuntimeError(f"Bulk import slice domain imbalance: {summary['imported_slice_max_domain_share']:.2%} exceeds 1.5%")
                     bulk_count = db.scalar(select(func.count()).select_from(RawDiscoveryItem).where(RawDiscoveryItem.discovery_source_id == summary["source_id"]))
                     if bulk_count < expected_target * 0.99:
                         raise RuntimeError(f"Missing bulk raw items in database: {bulk_count}/{expected_target}")

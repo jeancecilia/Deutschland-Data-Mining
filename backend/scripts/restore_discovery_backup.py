@@ -88,14 +88,6 @@ def restore_backup(backup_dir: str, skip_lock: bool = False):
             cur.execute("DROP TABLE temp_keywords_mapping")
             
             # Synchronize identity sequences for restored tables
-            for table in tables:
-                # We can dynamically setval based on the table's id sequence if it has an id column.
-                # Assuming all these tables have 'id' column as serial/identity except relations/aliases if they don't, but let's check
-                # For safety, attempt it only if id exists, but we know which tables have sequences.
-                # Actually, some might not have 'id'. 'discovery_entity_relations' has 'id'. 
-                # Let's run a generic block that handles errors gracefully, or check schema explicitly.
-                pass
-            
             seq_tables = [
                 "discovery_entities",
                 "raw_discovery_items",

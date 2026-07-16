@@ -106,10 +106,8 @@ def main():
             print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
             sys.exit(1)
     else:
-        if path.name == ALLOWED_100DOMAIN_FILE:
-            print(f"ERROR: Expected domain column in {ALLOWED_100DOMAIN_FILE}, but it was not found.")
-            sys.exit(1)
-        print("WARNING: No domain column found — skipping domain balance check.")
+        print(f"ERROR: Expected domain column in bulk seed file {path.name}, but it was not found.")
+        sys.exit(1)
 
     # ---- Dry run ----
     if args.dry_run:
@@ -249,11 +247,18 @@ def main():
         if etype_counts:
             print(f"Entity types: {dict(sorted(etype_counts.items()))}")
 
+        imported_slice_max_domain_share = 0
+        if domain_counts:
+            total_slice = sum(domain_counts.values())
+            max_slice_domain = max(domain_counts.values())
+            imported_slice_max_domain_share = max_slice_domain / total_slice if total_slice > 0 else 0
+
         return {
             "total_read": total_read,
             "total_inserted": total_inserted,
             "total_skipped": total_skipped,
             "max_share": max_share,
+            "imported_slice_max_domain_share": imported_slice_max_domain_share,
             "source_id": source.id
         }
 
