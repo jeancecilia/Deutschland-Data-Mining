@@ -17,7 +17,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://kdp:kdp@localhost:54
 from app.db.session import SessionLocal
 from app.models.discovery_pipeline import DiscoverySource, RawDiscoveryItem
 from sqlalchemy import select
-from app.worker.tasks import _acquire_advisory_lock, _FULL_PIPELINE_LOCK_ID
+from app.worker.tasks import _get_lock_connection, _acquire_advisory_lock, _release_advisory_lock, _FULL_PIPELINE_LOCK_ID
 import csv
 
 # Files that must never be imported (old bad datasets)
@@ -106,6 +106,9 @@ def main():
             print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
             sys.exit(1)
     else:
+        if path.name == ALLOWED_100DOMAIN_FILE:
+            print(f"ERROR: Expected domain column in {ALLOWED_100DOMAIN_FILE}, but it was not found.")
+            sys.exit(1)
         print("WARNING: No domain column found — skipping domain balance check.")
 
     # ---- Dry run ----
@@ -122,17 +125,17 @@ def main():
         return
 
     print(f"\nImporting: limit={args.limit:,}, offset={args.offset:,}, batch-size={args.batch_size:,}")
-    db = SessionLocal()
+    db = None
     lock_conn = None
     
-    if not args.skip_lock:
-        lock_conn = _get_lock_connection()
-        if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
-            print("ERROR: Could not acquire pipeline lock. Another import or pipeline rebuild is running.")
-            lock_conn.close()
-            sys.exit(1)
-        
     try:
+        db = SessionLocal()
+        
+        if not args.skip_lock:
+            lock_conn = _get_lock_connection()
+            if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
+                print("ERROR: Could not acquire pipeline lock. Another import or pipeline rebuild is running.")
+                sys.exit(1)
         # Get or create source
         source = db.scalars(
             select(DiscoverySource).where(DiscoverySource.name == args.source_name)
@@ -255,9 +258,9 @@ def main():
         }
 
     finally:
-        db.close()
+        if db:
+            db.close()
         if lock_conn:
-            from app.worker.tasks import _release_advisory_lock
             _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
             lock_conn.close()
 

@@ -9,8 +9,9 @@ os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://kdp:kdp@localhost:54
 
 from app.db.session import SessionLocal
 from sqlalchemy import text
+from app.worker.tasks import _get_lock_connection, _acquire_advisory_lock, _release_advisory_lock, _FULL_PIPELINE_LOCK_ID
 
-def restore_backup(backup_dir: str):
+def restore_backup(backup_dir: str, skip_lock: bool = False):
     path = Path(backup_dir)
     if not path.is_dir():
         print(f"ERROR: Backup directory {backup_dir} does not exist.")
@@ -24,6 +25,14 @@ def restore_backup(backup_dir: str):
         "discovery_entity_relations",
         "niche_candidate_keywords",
     ]
+    
+    lock_conn = None
+    if not skip_lock:
+        lock_conn = _get_lock_connection()
+        if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
+            print("ERROR: Could not acquire pipeline lock. Another pipeline process is running.")
+            lock_conn.close()
+            sys.exit(1)
 
     db = SessionLocal()
     try:
@@ -78,6 +87,34 @@ def restore_backup(backup_dir: str):
             ''')
             cur.execute("DROP TABLE temp_keywords_mapping")
             
+            # Synchronize identity sequences for restored tables
+            for table in tables:
+                # We can dynamically setval based on the table's id sequence if it has an id column.
+                # Assuming all these tables have 'id' column as serial/identity except relations/aliases if they don't, but let's check
+                # For safety, attempt it only if id exists, but we know which tables have sequences.
+                # Actually, some might not have 'id'. 'discovery_entity_relations' has 'id'. 
+                # Let's run a generic block that handles errors gracefully, or check schema explicitly.
+                pass
+            
+            seq_tables = [
+                "discovery_entities",
+                "raw_discovery_items",
+                "niche_candidates",
+                "discovery_entity_aliases",
+                "discovery_entity_relations",
+                "niche_candidate_keywords"
+            ]
+            
+            for table in seq_tables:
+                cur.execute(f'''
+                    SELECT setval(
+                        pg_get_serial_sequence('{table}', 'id'),
+                        COALESCE(MAX(id), 1),
+                        MAX(id) IS NOT NULL
+                    )
+                    FROM {table};
+                ''')
+            
         # Commit the entire restoration in a single transaction
         db.commit()
         print(f"Successfully restored backup from {backup_dir}")
@@ -88,9 +125,13 @@ def restore_backup(backup_dir: str):
         sys.exit(1)
     finally:
         db.close()
+        if lock_conn:
+            _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
+            lock_conn.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Restore discovery tables from CSV backup.")
     parser.add_argument("--backup-dir", required=True, help="Path to the backup directory (e.g. /app/backups/discovery_backup_20260716_123456)")
+    parser.add_argument("--skip-lock", action="store_true", help="Bypass acquiring the pipeline lock (use when invoked automatically during rebuild).")
     args = parser.parse_args()
-    restore_backup(args.backup_dir)
+    restore_backup(args.backup_dir, args.skip_lock)

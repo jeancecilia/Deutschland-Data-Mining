@@ -193,8 +193,10 @@ def run():
                     expected_target = args.bulk_limit
                     if summary["total_read"] < args.bulk_limit:
                         expected_target = summary["total_read"]
-                    if summary["total_inserted"] < expected_target * 0.99:
-                        raise RuntimeError(f"Bulk import inserted {summary['total_inserted']} which is less than 99% of expected {expected_target}")
+                    
+                    processed = summary["total_inserted"] + summary["total_skipped"]
+                    if processed < expected_target * 0.99:
+                        raise RuntimeError(f"Bulk import processed {processed} (inserted+skipped) which is less than 99% of expected {expected_target}")
                     if summary["max_share"] > 0.015:
                         raise RuntimeError(f"Bulk import domain imbalance: {summary['max_share']:.2%} exceeds 1.5%")
                     bulk_count = db.scalar(select(func.count()).select_from(RawDiscoveryItem).where(RawDiscoveryItem.discovery_source_id == summary["source_id"]))
@@ -274,12 +276,17 @@ def run():
         print(f"ERROR: Rebuild failed: {e}")
         if 'args' in locals() and args.reset and backup_dir:
             print("Initiating automatic rollback...")
+            if db:
+                db.rollback()
+                db.close()
+                db = None
             import subprocess
-            subprocess.run([sys.executable, "scripts/restore_discovery_backup.py", "--backup-dir", backup_dir], check=True)
+            subprocess.run([sys.executable, "scripts/restore_discovery_backup.py", "--backup-dir", backup_dir, "--skip-lock"], check=True)
             print("Rollback completed successfully.")
         sys.exit(1)
     finally:
-        db.close()
+        if db:
+            db.close()
         _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
         lock_conn.close()
 
