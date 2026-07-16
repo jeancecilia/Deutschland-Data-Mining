@@ -76,7 +76,7 @@ def validate_candidates_fast(
     candidates = list(
         db.scalars(
             select(NicheCandidate)
-            .where(NicheCandidate.status.in_(["prevalidation_queued", "needs_manual_review"]))
+            .where(NicheCandidate.status == "prevalidation_queued")
             .order_by(NicheCandidate.confidence.desc())
             .limit(limit)
         )

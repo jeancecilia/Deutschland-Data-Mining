@@ -37,10 +37,11 @@ def refresh_recent_search_runs() -> dict[str, int | str]:
 
 @celery_app.task(name="app.worker.tasks.run_discovery_cycle")
 def run_discovery_cycle_task() -> dict[str, int | str]:
-    db = SessionLocal()
-    if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
-        db.close()
+    lock_conn = _get_lock_connection()
+    if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
+        lock_conn.close()
         return {"status": "skipped", "reason": "Another pipeline run is in progress."}
+    db = SessionLocal()
     try:
         cycle = run_discovery_cycle(
             db,
@@ -61,8 +62,9 @@ def run_discovery_cycle_task() -> dict[str, int | str]:
             "timestamp": datetime.now(UTC).isoformat(),
         }
     finally:
-        _release_advisory_lock(db, _FULL_PIPELINE_LOCK_ID)
         db.close()
+        _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
+        lock_conn.close()
 
 
 # ── Discovery Pipeline Tasks ────────────────────────────────────────────────
@@ -71,17 +73,19 @@ def run_discovery_cycle_task() -> dict[str, int | str]:
 @celery_app.task(name="app.worker.tasks.discovery_import_seeds")
 def discovery_import_seeds() -> dict:
     """Import all CSV seed universe files into raw_discovery_items."""
-    db = SessionLocal()
-    if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
-        db.close()
+    lock_conn = _get_lock_connection()
+    if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
+        lock_conn.close()
         return {"status": "skipped", "reason": "Another pipeline run is in progress."}
+    db = SessionLocal()
     try:
         from app.services.discovery import import_all_seed_universes
         results = import_all_seed_universes(db)
         return {"status": "ok", "imported": results, "timestamp": datetime.now(UTC).isoformat()}
     finally:
-        _release_advisory_lock(db, _FULL_PIPELINE_LOCK_ID)
         db.close()
+        _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
+        lock_conn.close()
 
 
 @celery_app.task(name="app.worker.tasks.discovery_extract_entities")
@@ -175,17 +179,24 @@ def discovery_promote_candidates() -> dict:
 _FULL_PIPELINE_LOCK_ID = 1001
 
 
-def _acquire_advisory_lock(db, lock_id: int) -> bool:
-    """Try to acquire a PostgreSQL advisory lock. Returns True if acquired."""
+def _acquire_advisory_lock(connection, lock_id: int) -> bool:
+    """Try to acquire a PG advisory lock on a dedicated connection.
+    The connection MUST be kept open for the entire job duration."""
     from sqlalchemy import text
-    result = db.execute(text("SELECT pg_try_advisory_lock(:id)"), {"id": lock_id}).scalar()
+    result = connection.execute(text("SELECT pg_try_advisory_lock(:id)"), {"id": lock_id}).scalar()
     return bool(result)
 
 
-def _release_advisory_lock(db, lock_id: int) -> None:
-    """Release a PostgreSQL advisory lock."""
+def _release_advisory_lock(connection, lock_id: int) -> None:
+    """Release a PG advisory lock on the same connection that acquired it."""
     from sqlalchemy import text
-    db.execute(text("SELECT pg_advisory_unlock(:id)"), {"id": lock_id})
+    connection.execute(text("SELECT pg_advisory_unlock(:id)"), {"id": lock_id})
+
+
+def _get_lock_connection():
+    """Get a dedicated raw DB-API connection for advisory lock."""
+    from app.db.session import engine
+    return engine.connect()
 
 
 @celery_app.task(
@@ -199,10 +210,11 @@ def discovery_full_pipeline() -> dict:
 
     Uses a PostgreSQL advisory lock to prevent overlapping runs.
     """
-    db = SessionLocal()
-    if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
-        db.close()
+    lock_conn = _get_lock_connection()
+    if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
+        lock_conn.close()
         return {"status": "skipped", "reason": "Another pipeline run is in progress."}
+    db = SessionLocal()
 
     result: dict[str, object] = {
         "import_seeds": None,
@@ -283,5 +295,6 @@ def discovery_full_pipeline() -> dict:
         result["timestamp"] = datetime.now(UTC).isoformat()
         return result
     finally:
-        _release_advisory_lock(db, _FULL_PIPELINE_LOCK_ID)
         db.close()
+        _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
+        lock_conn.close()
