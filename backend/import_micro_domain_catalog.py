@@ -74,6 +74,7 @@ def main():
 
             existing.add(micro)
             metadata = {
+                "domain": row["macro_domain"].strip(),
                 "macro_domain": row["macro_domain"].strip(),
                 "subdomain": row["subdomain"].strip(),
                 "micro_domain": micro,

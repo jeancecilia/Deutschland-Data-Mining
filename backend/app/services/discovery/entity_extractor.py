@@ -231,11 +231,25 @@ def extract_entities_from_raw_items(
             current_entity.source_count = (current_entity.source_count or 1) + 1
             current_entity.confidence = min(1.0, current_entity.confidence + 0.05)
             
-            # Merge structured metadata
+            # Merge structured metadata deterministically
             incoming = item.metadata_json or {}
             existing_meta = current_entity.metadata_json or {}
-            if incoming.get("macro_domain") or not existing_meta.get("macro_domain"):
+            
+            def get_priority(meta):
+                source = meta.get("source", "")
+                if "micro_domain_catalog" in source:
+                    return 3
+                if "verified" in source:
+                    return 2
+                return 1
+
+            in_prio = get_priority(incoming)
+            ex_prio = get_priority(existing_meta)
+            
+            if in_prio >= ex_prio:
                 current_entity.metadata_json = {**existing_meta, **incoming}
+            else:
+                current_entity.metadata_json = {**incoming, **existing_meta}
                 
             db.add(current_entity)
             updated += 1

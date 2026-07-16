@@ -23,16 +23,31 @@ import json
 
 
 def reset_discovery_tables(db):
-    print("Backing up discovery tables to /data/...")
+    import datetime
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    print(f"Backing up discovery tables to /tmp/discovery_backup_{timestamp}/...")
     try:
-        import pandas as pd
-        engine = db.get_bind()
+        import os
+        import csv
+        os.makedirs(f"/tmp/discovery_backup_{timestamp}", exist_ok=True)
         for table in ["discovery_entity_relations", "niche_candidates", "discovery_entities", "raw_discovery_items", "discovery_entity_aliases", "niche_candidate_keywords"]:
-            df = pd.read_sql_table(table, engine)
-            df.to_csv(f"/data/{table}_backup_before_reset.csv", index=False)
+            result = db.execute(text(f"SELECT * FROM {table}"))
+            with open(f"/tmp/discovery_backup_{timestamp}/{table}.csv", "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(result.keys())
+                writer.writerows(result)
+        
+        # Backup keyword mappings
+        kw_res = db.execute(text("SELECT id, source_niche_candidate_id FROM keywords WHERE source_niche_candidate_id IS NOT NULL"))
+        with open(f"/tmp/discovery_backup_{timestamp}/keywords_mapping.csv", "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(kw_res.keys())
+            writer.writerows(kw_res)
+            
         print("Backup complete.")
     except Exception as e:
-        print(f"Backup failed: {e}. Skipping backup.")
+        print(f"Backup failed: {e}. Aborting reset.")
+        raise RuntimeError(f"Backup failed: {e}")
     
     print("Resetting discovery tables...")
     # Prevent destructive cascade into collected amazon data (keywords/search_runs)
@@ -53,6 +68,17 @@ def get_unprocessed_raw_count(db):
 
 def assert_metadata_coverage(db, catalog_source):
     print("Asserting metadata coverage...")
+    import os
+    csv_path = f"/data/discovery_seed_universes/micro_domains/{catalog_source}.csv"
+    csv_rows = 0
+    if os.path.exists(csv_path):
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            csv_rows = sum(1 for line in f) - 1  # exclude header
+    
+    raw_count = db.scalar(select(func.count()).select_from(RawDiscoveryItem).where(
+        text("metadata_json->>'source' = :source")
+    ).params(source=catalog_source))
+            
     total = db.scalar(select(func.count()).select_from(DiscoveryEntity).where(
         text("metadata_json->>'source' = :source")
     ).params(source=catalog_source))
@@ -69,6 +95,8 @@ def assert_metadata_coverage(db, catalog_source):
         text("metadata_json->>'source' = :source AND metadata_json->>'format_hint' IS NOT NULL AND metadata_json->>'format_hint' != ''")
     ).params(source=catalog_source))
     
+    print(f"CSV rows: {csv_rows}")
+    print(f"Raw items imported: {raw_count}")
     print(f"Total entities from {catalog_source}: {total}")
     print(f"Entities with macro_domain: {macro_domain}")
     print(f"Entities with audience_hint: {audience_hint}")
@@ -180,7 +208,10 @@ def run():
             print(f"  Relations: created={rel.created}, skipped={rel.skipped}")
             
             print("\n--- Phase: Graph/Domain-aware Candidate Composition ---")
-            comp_graph = compose_domain_aware_candidates(db, limit=2000, max_candidates_per_domain=100)
+            comp_domain = compose_domain_aware_candidates(db, limit=2000, max_candidates_per_domain=100)
+            print(f"  Domain-Aware Candidates: created={comp_domain.created}, skipped={comp_domain.skipped_blocked}")
+            
+            comp_graph = compose_niche_candidates(db, limit=2000)
             print(f"  Graph Candidates: created={comp_graph.created}, skipped={comp_graph.skipped_blocked}")
             
         print("\n--- Phase: Ranking ---")
