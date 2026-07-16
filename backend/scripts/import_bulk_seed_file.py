@@ -17,6 +17,8 @@ os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://kdp:kdp@localhost:54
 from app.db.session import SessionLocal
 from app.models.discovery_pipeline import DiscoverySource, RawDiscoveryItem
 from sqlalchemy import select
+from app.worker.tasks import _acquire_advisory_lock, _FULL_PIPELINE_LOCK_ID
+import csv
 
 # Files that must never be imported (old bad datasets)
 BLOCKED_BULK_FILES: set[str] = {
@@ -32,16 +34,16 @@ MAX_DOMAIN_SHARE = 0.015
 
 
 def main():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description="Bulk importer for seed universes")
     p.add_argument("--file", required=True)
-    p.add_argument("--batch-size", type=int, default=5000)
-    p.add_argument("--limit", type=int, default=10000)
+    p.add_argument("--limit", type=int, default=1000)
     p.add_argument("--offset", type=int, default=0)
+    p.add_argument("--batch-size", type=int, default=10000, help="Batch size for inserts")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--source-name", default="LLM Balanced Seed Universe 1M 100 Domains")
     p.add_argument("--source-type", default="llm_bulk_seed_universe_balanced")
-    p.add_argument("--skip-domain-check", action="store_true",
-                   help="Skip domain balance validation (not recommended)")
+    p.add_argument("--skip-domain-check", action="store_true", help="Bypass the max domain share constraint")
+    p.add_argument("--skip-lock", action="store_true", help="Do not try to acquire pipeline lock")
     args = p.parse_args()
 
     path = Path(args.file)
@@ -61,33 +63,32 @@ def main():
     # ---- Header validation ----
     print(f"File: {path} ({path.stat().st_size:,} bytes)")
     fh = gzip.open(path, "rt", encoding="utf-8-sig")
-    header = fh.readline().strip()
+    reader = csv.DictReader(fh)
+    header = reader.fieldnames
+    if not header:
+        print("ERROR: Empty file or missing header")
+        sys.exit(1)
+        
     required = {"name", "entity_type", "priority"}
-    cols = [c.strip() for c in header.split(",")]
-    missing = required - set(cols)
+    missing = required - set(header)
     if missing:
         print(f"ERROR: missing columns: {missing}")
         sys.exit(1)
     print(f"Header valid: {header}")
-    extra_cols = [c for c in cols if c not in required]
-    has_domain = "domain" in extra_cols
-    print(f"Extra columns: {extra_cols}")
+    has_domain = "domain" in header
     print(f"Has domain column: {has_domain}")
 
     # ---- Row counting and domain validation (sample first 100K) ----
     print("Sampling rows for domain balance check...")
     domain_sample: dict[str, int] = {}
     total_sampled = 0
-    for line in fh:
+    for row in reader:
         total_sampled += 1
         if total_sampled > 100000:
             break
         if has_domain:
-            parts = line.strip().split(",")
-            col_map = {c.strip(): i for i, c in enumerate(cols)}
-            domain_idx = col_map.get("domain")
-            if domain_idx is not None and domain_idx < len(parts):
-                domain = parts[domain_idx].strip()
+            domain = row.get("domain", "").strip()
+            if domain:
                 domain_sample[domain] = domain_sample.get(domain, 0) + 1
     fh.close()
 
@@ -95,24 +96,16 @@ def main():
     if domain_sample:
         total_domains = len(domain_sample)
         max_domain = max(domain_sample.values()) if domain_sample else 0
-        # Estimate total rows from file size (rough: ~60 bytes/row uncompressed, ~4-5x compression)
-        est_total_rows = int(path.stat().st_size * 180)  # rough bytes → rows for gz
-        est_total_rows = max(est_total_rows, total_sampled)  # at least what we sampled
-        max_share = max_domain / est_total_rows if est_total_rows > 0 else 0
+        max_share = max_domain / total_sampled if total_sampled > 0 else 0
         print(f"Domains detected (in sample): {total_domains}")
         print(f"Max domain count (in sample): {max_domain}")
-        print(f"Estimated total rows: {est_total_rows:,}")
-        print(f"Estimated max domain share: {max_share:.2%}")
+        print(f"Max domain share: {max_share:.2%}")
 
         if max_share > MAX_DOMAIN_SHARE and not args.skip_domain_check:
-            # Double-check with a larger sample if we're unsure
-            if est_total_rows < 500000:
-                print(f"WARNING: Low estimated total — domain share may be inaccurate.")
-            else:
-                print(f"ERROR: Domain imbalance detected! Max domain share {max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
-                print(f"  This dataset is too domain-skewed. Import aborted.")
-                print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
-                sys.exit(1)
+            print(f"ERROR: Domain imbalance detected! Max domain share {max_share:.2%} exceeds {MAX_DOMAIN_SHARE:.2%} threshold.")
+            print(f"  This dataset is too domain-skewed. Import aborted.")
+            print(f"  Use --skip-domain-check to bypass this validation (not recommended).")
+            sys.exit(1)
     else:
         print("WARNING: No domain column found — skipping domain balance check.")
 
@@ -129,9 +122,14 @@ def main():
         print("\nDry run complete. No data written.")
         return
 
-    # ---- Import ----
     print(f"\nImporting: limit={args.limit:,}, offset={args.offset:,}, batch-size={args.batch_size:,}")
     db = SessionLocal()
+    
+    if not args.skip_lock:
+        if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
+            print("ERROR: Could not acquire pipeline lock. Another import or pipeline rebuild is running.")
+            sys.exit(1)
+        
     try:
         # Get or create source
         source = db.scalars(
@@ -171,27 +169,20 @@ def main():
         started = time.time()
 
         fh = gzip.open(path, "rt", encoding="utf-8-sig")
-        fh.readline()  # skip header
-        col_map = {c.strip(): i for i, c in enumerate(cols)}
-        name_idx = col_map.get("name", 0)
-        etype_idx = col_map.get("entity_type", 1)
-        priority_idx = col_map.get("priority", 2)
-        domain_idx = col_map.get("domain", 3) if has_domain else None
-        subdomain_idx = col_map.get("subdomain", 4) if len(cols) > 4 else None
+        reader = csv.DictReader(fh)
 
-        for line in fh:
+        for row in reader:
             total_read += 1
             if total_read <= args.offset:
                 continue
             if total_read > args.offset + args.limit:
                 break
 
-            parts = line.strip().split(",")
-            name = parts[name_idx].strip() if name_idx < len(parts) else ""
-            etype = parts[etype_idx].strip() if etype_idx < len(parts) else "topic"
-            priority = parts[priority_idx].strip() if priority_idx < len(parts) else "50"
-            domain = parts[domain_idx].strip() if domain_idx is not None and domain_idx < len(parts) else ""
-            subdomain = parts[subdomain_idx].strip() if subdomain_idx is not None and subdomain_idx < len(parts) else ""
+            name = row.get("name", "").strip()
+            etype = row.get("entity_type", "topic").strip()
+            priority = row.get("priority", "50").strip()
+            domain = row.get("domain", "").strip() if has_domain else ""
+            subdomain = row.get("subdomain", "").strip() if "subdomain" in header else ""
 
             if not name:
                 continue
@@ -243,9 +234,8 @@ def main():
             total_inserted += len(batch)
 
         elapsed = time.time() - started
-        rate = total_inserted / elapsed if elapsed > 0 else 0
-        print(f"\nDone. Inserted: {total_inserted:,}, Skipped: {total_skipped:,}, Read: {total_read:,}")
-        print(f"Duration: {elapsed:.1f}s ({rate:.0f} rows/s)")
+        print(f"\nDone. Imported: {total_inserted:,}, Skipped: {total_skipped:,} in {elapsed:.1f}s")
+        print(f"Total rows read: {total_read:,}")
         if domain_counts:
             print(f"Domains: {len(domain_counts)}")
             top_domains = sorted(domain_counts.items(), key=lambda x: x[1], reverse=True)[:10]
@@ -256,7 +246,6 @@ def main():
 
     finally:
         db.close()
-
 
 if __name__ == "__main__":
     main()

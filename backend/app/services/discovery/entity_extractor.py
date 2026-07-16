@@ -246,10 +246,24 @@ def extract_entities_from_raw_items(
             in_prio = get_priority(incoming)
             ex_prio = get_priority(existing_meta)
             
-            if in_prio >= ex_prio:
+            if in_prio > ex_prio:
                 current_entity.metadata_json = {**existing_meta, **incoming}
-            else:
+            elif in_prio < ex_prio:
                 current_entity.metadata_json = {**incoming, **existing_meta}
+            else:
+                # Deterministic tie-breaker for same priority:
+                # longer dict wins, then alphabetical string fallback
+                in_len = len(incoming)
+                ex_len = len(existing_meta)
+                if in_len > ex_len:
+                    current_entity.metadata_json = {**existing_meta, **incoming}
+                elif in_len < ex_len:
+                    current_entity.metadata_json = {**incoming, **existing_meta}
+                else:
+                    if str(incoming) > str(existing_meta):
+                        current_entity.metadata_json = {**existing_meta, **incoming}
+                    else:
+                        current_entity.metadata_json = {**incoming, **existing_meta}
                 
             db.add(current_entity)
             updated += 1

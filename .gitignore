@@ -48,3 +48,13 @@ backend/celerybeat-schedule
 Thumbs.db
 .DS_Store
 
+# Bulk Datasets and Diagnostics
+discovery_seed_entities*.csv.gz
+exported_candidates.csv
+backend/exported_candidates.csv
+backend/diag*.py
+backend/export*.py
+backend/run_*.py
+scripts/diag*.py
+scripts/export*.py
+scripts/run_*.py

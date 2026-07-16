@@ -25,21 +25,21 @@ import json
 def reset_discovery_tables(db):
     import datetime
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    print(f"Backing up discovery tables to /tmp/discovery_backup_{timestamp}/...")
+    print(f"Backing up discovery tables to /app/backups/discovery_backup_{timestamp}/...")
     try:
         import os
         import csv
-        os.makedirs(f"/tmp/discovery_backup_{timestamp}", exist_ok=True)
+        os.makedirs(f"/app/backups/discovery_backup_{timestamp}", exist_ok=True)
         for table in ["discovery_entity_relations", "niche_candidates", "discovery_entities", "raw_discovery_items", "discovery_entity_aliases", "niche_candidate_keywords"]:
             result = db.execute(text(f"SELECT * FROM {table}"))
-            with open(f"/tmp/discovery_backup_{timestamp}/{table}.csv", "w", newline="", encoding="utf-8") as f:
+            with open(f"/app/backups/discovery_backup_{timestamp}/{table}.csv", "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(result.keys())
                 writer.writerows(result)
         
         # Backup keyword mappings
         kw_res = db.execute(text("SELECT id, source_niche_candidate_id FROM keywords WHERE source_niche_candidate_id IS NOT NULL"))
-        with open(f"/tmp/discovery_backup_{timestamp}/keywords_mapping.csv", "w", newline="", encoding="utf-8") as f:
+        with open(f"/app/backups/discovery_backup_{timestamp}/keywords_mapping.csv", "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(kw_res.keys())
             writer.writerows(kw_res)
@@ -104,6 +104,11 @@ def assert_metadata_coverage(db, catalog_source):
     
     if total == 0:
         raise RuntimeError("Catalog source not found or no entities extracted")
+    if csv_rows > 0 and raw_count / csv_rows < 0.99:
+        raise RuntimeError(f"Missing raw items: {raw_count}/{csv_rows} ({raw_count/csv_rows:.1%})")
+    if total / raw_count < 0.95:
+        raise RuntimeError(f"Excessive deduplication/collapse: {total} entities from {raw_count} raw items")
+        
     if macro_domain / total < 0.95:
         raise RuntimeError(f"Insufficient macro-domain coverage: {macro_domain}/{total}")
     if audience_hint / total < 0.95:
@@ -118,6 +123,8 @@ def run():
     parser.add_argument("--import-seeds", action="store_true", help="Trigger seed imports and catalog imports")
     parser.add_argument("--catalog-source", default="micro_domain_catalog_2k_de_v2", help="Default: micro_domain_catalog_2k_de_v2")
     parser.add_argument("--canonical-only", action="store_true", help="Skip variants")
+    parser.add_argument("--bulk-file", type=str, help="Path to bulk seed file (e.g. data/discovery_seed_universes/bulk/...)")
+    parser.add_argument("--bulk-limit", type=int, default=1000000, help="Limit for bulk importer")
     parser.add_argument("--dry-run", action="store_true", help="Print execution plan without making changes")
     args = parser.parse_args()
 
@@ -160,17 +167,25 @@ def run():
                 
         if args.import_seeds:
             print("\nImporting manifest seeds...")
+            from app.services.discovery.source_registry import import_all_seed_universes
             import_all_seed_universes(db)
+            db.commit()
+            
             print("Importing structured micro-domain catalog...")
-            cmd = [
-                "python", 
-                "import_micro_domain_catalog.py", 
-                "--file", 
-                f"/data/discovery_seed_universes/micro_domains/{args.catalog_source}.csv", 
-                "--source-name", 
-                args.catalog_source
-            ]
-            subprocess.run(cmd, check=True, cwd="/app")
+            import sys
+            from import_micro_domain_catalog import main as import_micro_main
+            
+            old_argv = sys.argv
+            sys.argv = ["import_micro_domain_catalog.py", "--file", f"/data/discovery_seed_universes/micro_domains/{args.catalog_source}.csv", "--source-name", args.catalog_source]
+            import_micro_main()
+            sys.argv = old_argv
+            
+            if args.bulk_file:
+                print("Importing bulk seed file...")
+                from scripts.import_bulk_seed_file import main as import_bulk_main
+                sys.argv = ["import_bulk_seed_file.py", "--file", args.bulk_file, "--limit", str(args.bulk_limit), "--batch-size", "5000", "--skip-lock", "--skip-domain-check"]
+                import_bulk_main()
+                sys.argv = old_argv
             
         print("\n--- Phase: Entity Extraction ---")
         iteration = 1
