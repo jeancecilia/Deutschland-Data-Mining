@@ -323,9 +323,9 @@ def import_all_seed_universes(db: Session) -> dict[str, int]:
                 name=entry["source_name"],
                 source_type=entry["source_type"],
                 language="de",
-                country="de",
-                marketplace="amazon.de",
-                status="active",
+                country="DE",
+                is_active=True,
+                metadata_json={"manifest_filename": entry["filename"]},
             )
             db.add(source)
             db.flush()

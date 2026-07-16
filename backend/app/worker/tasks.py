@@ -243,6 +243,20 @@ def discovery_full_pipeline() -> dict:
             "skipped_generic": comp_batch.skipped_generic,
         }
 
+        # Step 4.5: Rank candidates (pre-validation gate)
+        from app.services.discovery.candidate_ranker import rank_candidates_for_validation
+        rank_result = rank_candidates_for_validation(
+            db,
+            limit=5000,
+            min_score=70,
+        )
+        result["rank_candidates"] = {
+            "ranked": rank_result.ranked,
+            "queued": rank_result.queued,
+            "manual_review": rank_result.manual_review,
+            "rejected": rank_result.rejected_pre_validation,
+        }
+
         # Step 5: Fast validate
         val_results = validate_candidates_fast(db, limit=100)
         result["fast_validate"] = {
