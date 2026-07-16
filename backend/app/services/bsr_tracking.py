@@ -231,8 +231,8 @@ def _refresh_book_snapshot_if_due(
         or snapshot.category_bsr_3 is not None
     ):
         return "refreshed", snapshot, None
-    # Delete empty snapshot to avoid inflating counts
+    # Delete empty snapshot and commit to ensure cleanup
     if snapshot is not None:
         db.delete(snapshot)
-        db.flush()
+        db.commit()
     return "failed", None, "No BSR data found on detail page."

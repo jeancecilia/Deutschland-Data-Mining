@@ -470,7 +470,7 @@ def rank_candidates_for_validation(
         # This prevents unranked candidates from being fast-validated or promoted.
         status_map = {
             "queued": "prevalidation_queued",
-            "manual_review": "needs_manual_review",
+            "manual_review": "prevalidation_manual_review",
             "rejected_pre_validation": "rejected_pre_validation",
         }
         candidate.status = status_map.get(status, candidate.status)
