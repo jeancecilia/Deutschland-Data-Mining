@@ -24,11 +24,14 @@ import json
 
 def reset_discovery_tables(db):
     print("Resetting discovery tables...")
-    # Order matters for foreign keys
-    db.execute(text("TRUNCATE TABLE discovery_entity_relations CASCADE"))
-    db.execute(text("TRUNCATE TABLE discovery_entities CASCADE"))
-    db.execute(text("TRUNCATE TABLE niche_candidates CASCADE"))
-    db.execute(text("TRUNCATE TABLE raw_discovery_items CASCADE"))
+    # Prevent destructive cascade into collected amazon data (keywords/search_runs)
+    db.execute(text("UPDATE keywords SET source_niche_candidate_id = NULL WHERE source_niche_candidate_id IS NOT NULL"))
+    
+    db.execute(text("DELETE FROM discovery_entity_aliases"))
+    db.execute(text("DELETE FROM discovery_entity_relations"))
+    db.execute(text("DELETE FROM niche_candidates"))
+    db.execute(text("DELETE FROM discovery_entities"))
+    db.execute(text("DELETE FROM raw_discovery_items"))
     db.commit()
 
 
@@ -59,20 +62,45 @@ def assert_metadata_coverage(db, catalog_source):
     print(f"Entities with audience_hint: {audience_hint}")
     print(f"Entities with format_hint: {format_hint}")
     
-    if total > 0 and macro_domain == 0:
-        raise RuntimeError("Metadata assertion failed: macro_domain coverage is 0. Wrong catalog loaded?")
+    if total == 0:
+        raise RuntimeError("Catalog source not found or no entities extracted")
+    if macro_domain / total < 0.95:
+        raise RuntimeError(f"Insufficient macro-domain coverage: {macro_domain}/{total}")
+    if audience_hint / total < 0.95:
+        raise RuntimeError(f"Insufficient audience coverage: {audience_hint}/{total}")
+    if format_hint / total < 0.95:
+        raise RuntimeError(f"Insufficient format coverage: {format_hint}/{total}")
 
 
 def run():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--reset", action="store_true", help="Truncate/archive existing discovery tables")
+    parser.add_argument("--reset", action="store_true", help="Delete existing discovery tables safely")
     parser.add_argument("--import-seeds", action="store_true", help="Trigger seed imports and catalog imports")
-    parser.add_argument("--catalog-source", default="micro_domain_catalog_10k_de_v2", help="Default: micro_domain_catalog_10k_de_v2")
+    parser.add_argument("--catalog-source", default="micro_domain_catalog_2k_de_v2", help="Default: micro_domain_catalog_2k_de_v2")
     parser.add_argument("--canonical-only", action="store_true", help="Skip variants")
-    parser.add_argument("--dry-run", action="store_true", help="Don't commit transactions")
+    parser.add_argument("--dry-run", action="store_true", help="Print execution plan without making changes")
     args = parser.parse_args()
 
     print("Starting True Discovery V2 Full Rebuild at Scale...")
+
+    if args.dry_run:
+        print("\nDRY RUN ENABLED - Execution Plan:")
+        print("1. Acquire PostgreSQL advisory lock")
+        if args.reset:
+            print("2. UPDATE keywords SET source_niche_candidate_id = NULL")
+            print("3. DELETE FROM discovery_entity_relations, discovery_entities, niche_candidates, raw_discovery_items")
+        if args.import_seeds:
+            print("4. Call import_all_seed_universes(db)")
+            print(f"5. Import /data/discovery_seed_universes/micro_domains/{args.catalog_source}.csv")
+        print("6. Iteratively extract entities until raw queue is empty")
+        print("7. Assert metadata coverage for catalog source")
+        print("8. Compose canonical microdomain candidates")
+        if not args.canonical_only:
+            print("9. Build supplementary graph relations and domain-aware candidates")
+        print("10. Rank candidates iteratively until new queue is exhausted")
+        print("11. Fast-validate candidates iteratively until prevalidation_queued is exhausted")
+        print("12. Release lock")
+        sys.exit(0)
     
     lock_conn = _get_lock_connection()
     if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
@@ -89,25 +117,19 @@ def run():
         
         if args.reset:
             reset_discovery_tables(db)
-            if args.dry_run:
-                db.rollback()
-                print("Dry run: Rolled back table reset.")
                 
         if args.import_seeds:
             print("\nImporting manifest seeds...")
             import_all_seed_universes(db)
             print("Importing structured micro-domain catalog...")
-            # Run the importer script
             cmd = [
                 "python", 
                 "import_micro_domain_catalog.py", 
                 "--file", 
-                "/data/discovery_seed_universes/micro_domains/micro_domain_catalog_10000_de_v2.csv", 
+                f"/data/discovery_seed_universes/micro_domains/{args.catalog_source}.csv", 
                 "--source-name", 
                 args.catalog_source
             ]
-            if args.dry_run:
-                cmd.append("--dry-run")
             subprocess.run(cmd, check=True, cwd="/app")
             
         print("\n--- Phase: Entity Extraction ---")
@@ -120,8 +142,6 @@ def run():
                 
             print(f"Iteration {iteration}: {unprocessed} raw items remain...")
             ext = extract_entities_from_raw_items(db, limit=2000)
-            if args.dry_run:
-                db.rollback()
             print(f"  Extracted: created={ext.created}, updated={ext.updated}, skipped={ext.skipped}")
             
             if ext.created == 0 and ext.updated == 0 and ext.skipped == 0:
@@ -140,34 +160,36 @@ def run():
             max_micro_domains=10000, 
             source=args.catalog_source
         )
-        if args.dry_run:
-            db.rollback()
         print(f"  Canonical Candidates: created={comp_canonical.created}, skipped={comp_canonical.skipped_blocked}")
         
         if not args.canonical_only:
             print("\n--- Phase: Supplementary Graph Relations ---")
             rel = build_entity_relations(db, limit_per_rule=1000)
-            if args.dry_run:
-                db.rollback()
             print(f"  Relations: created={rel.created}, skipped={rel.skipped}")
             
             print("\n--- Phase: Graph/Domain-aware Candidate Composition ---")
             comp_graph = compose_niche_candidates(db, limit=2000)
-            if args.dry_run:
-                db.rollback()
             print(f"  Graph Candidates: created={comp_graph.created}, skipped={comp_graph.skipped_blocked}")
             
         print("\n--- Phase: Ranking ---")
-        rank = rank_candidates_for_validation(db, limit=10000, min_score=70)
-        if args.dry_run:
-            db.rollback()
-        print(f"  Ranked: ranked={rank.ranked}, queued={rank.queued}, manual={rank.manual_review}, rejected={rank.rejected_pre_validation}")
+        iteration = 1
+        while True:
+            rank = rank_candidates_for_validation(db, limit=10000, min_score=70)
+            print(f"  Iteration {iteration}: ranked={rank.ranked}, queued={rank.queued}, manual={rank.manual_review}, rejected={rank.rejected_pre_validation}")
+            unranked = db.scalar(select(func.count()).select_from(NicheCandidate).where(NicheCandidate.status == 'new'))
+            if unranked == 0 or rank.ranked == 0:
+                break
+            iteration += 1
         
         print("\n--- Phase: Fast Validation ---")
-        val = validate_candidates_fast(db, limit=10000)
-        if args.dry_run:
-            db.rollback()
-        print(f"  Validation: processed={len(val)}")
+        iteration = 1
+        while True:
+            val = validate_candidates_fast(db, limit=10000)
+            print(f"  Iteration {iteration}: processed={len(val)}")
+            unvalidated = db.scalar(select(func.count()).select_from(NicheCandidate).where(NicheCandidate.status == 'prevalidation_queued'))
+            if unvalidated == 0 or len(val) == 0:
+                break
+            iteration += 1
 
         print("\n--- After Funnel ---")
         overview_after = get_discovery_overview(db)

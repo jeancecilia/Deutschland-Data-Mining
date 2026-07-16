@@ -57,7 +57,10 @@ def main():
             db.refresh(source)
             print(f"Created source: id={source.id}")
 
-        existing = set(db.scalars(select(RawDiscoveryItem.raw_text)))
+        existing = set(db.scalars(
+            select(RawDiscoveryItem.raw_text)
+            .where(RawDiscoveryItem.discovery_source_id == source.id)
+        ))
         total_inserted = 0
         total_skipped = 0
         batch = []

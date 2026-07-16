@@ -1,54 +1,34 @@
-# Discovery V2 Full Rebuild Walkthrough
+# Discovery V2 P0/P1 Fix Walkthrough
 
-## What was Changed
-The initial rebuild script has been completely refactored to conform to the true architectural intent of Discovery V2. It now correctly orchestrates the pipeline, maintains database locking constraints, uses the proper structured catalog, and explicitly calls the dedicated micro-domain composer rather than exclusively relying on graph edge generation.
+This update resolves critical data-destruction bugs (P0) introduced in the previous iteration and significantly improves the robustness of the V2 Rebuild architecture (P1).
 
-1. **Advisory Locks**: The script now uses the same PostgreSQL advisory lock (`_FULL_PIPELINE_LOCK_ID = 1001`) as the Celery scheduled tasks, preventing overlapping execution and race conditions.
-2. **Proper Data Resets**: `--reset` strictly truncates all discovery tables (`raw_discovery_items`, `discovery_entities`, `niche_candidates`, etc.) safely with cascades.
-3. **Structured Micro-Domain Catalog**: The V2 rebuild correctly invokes the `--import-seeds` cycle, mapping to `micro_domain_catalog_10000_de_v2.csv` directly. A critical bug in `import_micro_domain_catalog.py` where it hardcoded the wrong source name (`micro_domain_catalog_10k_de`) has been fixed, allowing downstream systems to locate and query the entities based on the runtime source arguments.
-4. **Reliable Exhaustion Loop**: The raw item extraction now runs iteratively inside a `while` loop that terminates strictly when `SELECT COUNT(*) FROM raw_discovery_items WHERE status = 'new'` reaches exactly zero.
-5. **Metadata Asserts**: The pipeline now includes sanity checks for `macro_domain`, `audience_hint`, and `format_hint` counts inside the JSON payload before it proceeds to composition.
-6. **Canonical Composition First**: Instead of generically relying on the topic graph, the pipeline strictly invokes `compose_micro_domain_candidates(max_candidates_per_micro_domain=1, source="micro_domain_catalog_10k_de_v2")` to generate canonical variants securely derived from the structured catalog properties.
-7. **Production Threshold**: Ranking happens strictly at `min_score=70`, avoiding the artificial queueing of garbage candidates.
+## Changes Made
 
-## Verification & Execution Results
+### 1. Data Safety & Dry Run (P0 Fixed)
+* **Keyword Cascade Protection**: Before resetting candidates, the pipeline now executes `UPDATE keywords SET source_niche_candidate_id = NULL WHERE source_niche_candidate_id IS NOT NULL`.
+* **Safe Table Deletion**: The script now uses `DELETE FROM` instead of `TRUNCATE ... CASCADE`. This prevents accidental deletion of down-stream tables like `search_runs` and `search_results`. The precise order of deletion respects foreign keys: `discovery_entity_aliases` -> `discovery_entity_relations` -> `niche_candidates` -> `discovery_entities` -> `raw_discovery_items`.
+* **Execution Plan (Dry Run)**: The `--dry-run` flag now correctly short-circuits the entire pipeline before making *any* mutating calls or imports, printing a calculated plan and immediately returning `0`.
 
-When we execute `docker exec deutschland-data-mining-backend-1 python -m app.scripts.run_full_rebuild_v2 --reset --import-seeds`, we now see the exact desired behavior.
+### 2. Catalog Import & Deduplication (P1 Fixed)
+* **Scoped Deduplication**: Fixed `import_micro_domain_catalog.py` to only deduplicate incoming raw texts against `RawDiscoveryItem` entries that share the exact same `discovery_source_id`. This correctly allows the micro-domain catalog to supply its structured metadata even if a primitive version of the topic phrase was already loaded from a generic seed manifest.
+* **Catalog Size Documentation**: The catalog file has been accurately renamed from `micro_domain_catalog_10000_de_v2.csv` to `micro_domain_catalog_2k_de_v2.csv` to correctly state its capacity of ~2,013 rows.
 
-### Funnel Analysis Output
+### 3. Metadata Assertions & Exhaustion Loops (P1 Fixed)
+* **Strict Assertion Policy**: Extracted metadata is now rigorously tested. The pipeline will raise a `RuntimeError` if macro domain, audience hint, or format hint properties are present in less than 95% of extracted catalog entities.
+* **Exhaustion Queues**: Both the ranker and fast validator operate inside `while True:` loops that strictly monitor `status = 'new'` and `status = 'prevalidation_queued'` respectively, executing batches of 10,000 until the tables are identically zero.
 
-```json
---- After Funnel ---
-{
-  "source_count": 57,
-  "active_source_count": 57,
-  "raw_item_count": 2966,
-  "unprocessed_raw_count": 0,
-  "entity_count": 2770,
-  "entity_types": {
-    "topic": 2329,
-    "profession": 116,
-    "audience": 88,
-    "hobby": 64,
-    "problem": 64,
-    "exam": 52,
-    "life_event": 41,
-    "skill": 7,
-    "book_format": 5,
-    "object": 4
-  },
-  "domain_count": 40,
-  "entity_domain_count": 39,
-  "candidate_domain_count": 96,
-  "relation_count": 874,
-  "candidate_count": 4013,
-  "new_candidate_count": 0,
-  "promoted_candidate_count": 0,
-  "rejected_candidate_count": 17
-}
-```
+## Pipeline Results
 
-### Key Differences 
-1. **Candidate Yield**: The pipeline successfully composed **4,013 highly qualified candidates**. (Compared to `0` from the previous script run).
-2. **Entity Types and Domain Counts**: Entities are now heavily structured (`profession: 116`, `audience: 88`), and candidate domains successfully inherited domains like `garten: 29` and `senioren: 29`, indicating that the V2 catalog's `metadata_json` successfully traversed through the canonical micro-domain composer.
-3. **Queue States**: During the execution logs, you can see `ranked=4013, queued=41, manual=161, rejected=3811`. This proves that the strict `70` production threshold actively rejected 3,811 candidates, queued 41 items for immediate automated validation, and securely placed 161 borderlines in manual review, acting identically to the production Celery orchestrator.
+Executing `docker exec deutschland-data-mining-backend-1 python -m app.scripts.run_full_rebuild_v2 --reset --import-seeds` resulted in a perfectly successful pipeline run with safe execution loops.
+
+### Generated Candidate Funnel
+The pipeline efficiently processed the structured catalog and yielded the following verified candidate states:
+
+| Stage                                | Count |
+| ------------------------------------ | ----: |
+| Generated candidates                 | 4,013 |
+| Rejected during pre-validation       | 3,811 |
+| Sent to pre-validation manual review |   161 |
+| Sent to fast validation              |    41 |
+
+Note that while 4,013 candidates were successfully generated and correctly bound to the domain knowledge graph, **only 41** qualified for automated fast validation after the rigorous ranker cutoff (`>=70` threshold).
