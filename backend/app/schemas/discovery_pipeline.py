@@ -169,7 +169,6 @@ class NicheCandidateRead(BaseModel):
 
 
 class NicheCandidateUpdate(BaseModel):
-    status: str | None = None
     rejection_reason: str | None = None
     promotion_reason: str | None = None
     risk_level: str | None = None

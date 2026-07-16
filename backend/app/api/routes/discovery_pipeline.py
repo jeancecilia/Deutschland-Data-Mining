@@ -438,7 +438,7 @@ def approve_candidate_for_validation(
     candidate.status = "prevalidation_queued"
     
     # Also update the source entities state so it appears in the queue view
-    se = candidate.source_entities or {}
+    se = dict(candidate.source_entities or {})
     se["validation_queue_status"] = "queued"
     candidate.source_entities = se
     
