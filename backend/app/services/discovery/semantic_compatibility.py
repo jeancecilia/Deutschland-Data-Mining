@@ -28,6 +28,24 @@ class CompatibilityResult:
     suggested_rewrite: str | None
 
 
+def _find_topic_rule(topic_key: str) -> str | None:
+    """Find the longest matching topic rule in DOMAIN_AUDIENCE_COMPATIBILITY.
+    For example, 'ki im handwerk' is a better match than 'ki'.
+    """
+    if not topic_key:
+        return None
+        
+    best_match = None
+    max_len = 0
+    
+    for rule in DOMAIN_AUDIENCE_COMPATIBILITY.keys():
+        if rule in topic_key:
+            if len(rule) > max_len:
+                max_len = len(rule)
+                best_match = rule
+                
+    return best_match
+
 def check_semantic_compatibility(
     topic: str | None,
     audience: str | None,
@@ -67,44 +85,6 @@ def check_semantic_compatibility(
             suggested_rewrite=suggestion,
         )
 
-    # ── Check explicit compatible pairs ────────────────────────────
-    compat_audiences = DOMAIN_AUDIENCE_COMPATIBILITY.get(topic_key, [])
-    if compat_audiences and audience_key in compat_audiences:
-        return CompatibilityResult(
-            compatible=True,
-            score=90,
-            reason=f"Topic '{topic}' and audience '{audience}' are a known compatible KDP pair",
-            hard_block=False,
-            suggested_rewrite=None,
-        )
-
-    # ── Check partial match: topic words in audience compatibility ──
-    topic_words = topic_key.split()
-    for word in topic_words:
-        if len(word) < 3:
-            continue
-        partial_compat = DOMAIN_AUDIENCE_COMPATIBILITY.get(word, [])
-        if audience_key in partial_compat:
-            return CompatibilityResult(
-                compatible=True,
-                score=75,
-                reason=f"Partial match: '{word}' is compatible with '{audience}'",
-                hard_block=False,
-                suggested_rewrite=None,
-            )
-
-    # ── Check reverse: audience as topic ───────────────────────────
-    if audience_key in DOMAIN_AUDIENCE_COMPATIBILITY:
-        aud_compat = DOMAIN_AUDIENCE_COMPATIBILITY[audience_key]
-        if any(tw in aud_compat for tw in topic_words):
-            return CompatibilityResult(
-                compatible=True,
-                score=65,
-                reason=f"Reverse compatibility: '{audience}' audience has '{topic}' in domain",
-                hard_block=False,
-                suggested_rewrite=None,
-            )
-
     # ── Check if topic IS actually an audience ─────────────────────
     audience_names = {"pflege", "eltern", "senioren", "selbstständige",
                       "rentner", "ruheständler", "anfänger", "freelancer",
@@ -121,6 +101,34 @@ def check_semantic_compatibility(
             hard_block=True,
             suggested_rewrite=f"Alltag organisieren für {topic}" if topic_key == "eltern" else None,
         )
+
+    # ── Longest match lookup for topic ─────────────────────────────
+    best_rule = _find_topic_rule(topic_key)
+    if best_rule:
+        compat_audiences = DOMAIN_AUDIENCE_COMPATIBILITY[best_rule]
+        if audience_key in compat_audiences:
+            score = 90 if best_rule == topic_key else 75
+            match_type = "Exact" if best_rule == topic_key else f"Partial match via '{best_rule}'"
+            return CompatibilityResult(
+                compatible=True,
+                score=score,
+                reason=f"{match_type}: '{best_rule}' is compatible with '{audience}'",
+                hard_block=False,
+                suggested_rewrite=None,
+            )
+
+    # ── Check reverse: audience as topic ───────────────────────────
+    if audience_key in DOMAIN_AUDIENCE_COMPATIBILITY:
+        aud_compat = DOMAIN_AUDIENCE_COMPATIBILITY[audience_key]
+        topic_words = topic_key.split()
+        if any(tw in aud_compat for tw in topic_words):
+            return CompatibilityResult(
+                compatible=True,
+                score=65,
+                reason=f"Reverse compatibility: '{audience}' audience has '{topic}' in domain",
+                hard_block=False,
+                suggested_rewrite=None,
+            )
 
     # ── Generic: no domain rule found, allow but with low confidence ─
     return CompatibilityResult(

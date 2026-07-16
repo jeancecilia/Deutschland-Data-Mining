@@ -23,7 +23,7 @@ from app.services.discovery.constraint_engine import (
     is_too_generic,
 )
 from app.services.discovery.entity_normalizer import normalize_entity_name
-from app.services.discovery.semantic_compatibility import check_semantic_compatibility
+from app.services.discovery.candidate_quality_gate import evaluate_candidate_quality
 
 # Simple reliable templates for domain-aware composition
 DOMAIN_TEMPLATES = [
@@ -36,11 +36,6 @@ DOMAIN_TEMPLATES = [
     "{topic} Ratgeber bei {problem}",
     "{topic} Workbook mit Vorlagen",
     "{topic} Schritt-für-Schritt",
-]
-
-SAFE_GLOBAL_AUDIENCES = [
-    "Anfänger", "Einsteiger", "Erwachsene", "Jugendliche",
-    "Senioren", "Eltern", "Berufstätige", "Studierende",
 ]
 
 SAFE_GLOBAL_PROBLEMS = [
@@ -144,9 +139,7 @@ def compose_domain_aware_candidates(
             if created_total >= limit or created_for_domain >= remaining_slots:
                 break
 
-            target_audiences = audiences[:5] if audiences else [
-                (0, a) for a in SAFE_GLOBAL_AUDIENCES[:3]
-            ]
+            target_audiences = audiences[:5] if audiences else []
             for aud_id, aud_name in target_audiences:
                 if created_total >= limit or created_for_domain >= remaining_slots:
                     break
@@ -176,8 +169,16 @@ def compose_domain_aware_candidates(
                         skipped_generic += 1
                         continue
 
-                    compat = check_semantic_compatibility(topic_name, aud_name)
-                    if not compat.compatible:
+                    meta = {"domain": domain}
+                    compat = evaluate_candidate_quality(
+                        candidate_name=phrase,
+                        topic_name=topic_name,
+                        audience_name=aud_name,
+                        problem_name=problems[0][1] if problems and "{problem}" in tpl else None,
+                        format_name=None,
+                        meta=meta,
+                    )
+                    if not compat.allowed:
                         skipped_blocked += 1
                         continue
 
@@ -375,8 +376,20 @@ def compose_micro_domain_candidates(
                 skipped_generic += 1
                 continue
 
-            compat = check_semantic_compatibility(ename, audience)
-            if not compat.compatible:
+            meta_for_eval = {
+                "macro_domain": macro,
+                "subdomain": sub,
+                "micro_domain": ename,
+            }
+            compat = evaluate_candidate_quality(
+                candidate_name=phrase,
+                topic_name=ename,
+                audience_name=audience,
+                problem_name=problem,
+                format_name=fmt,
+                meta=meta_for_eval,
+            )
+            if not compat.allowed:
                 skipped_blocked += 1
                 continue
 

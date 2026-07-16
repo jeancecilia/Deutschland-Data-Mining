@@ -221,6 +221,12 @@ INCOMPATIBLE_COMBINATIONS: set[tuple[str, str]] = {
     ("demenz", "freelancer"),
     ("demenz", "kleinunternehmer"),
     ("demenz", "handwerker"),
+    ("demenz", "jugendliche"),
+    ("demenz", "schüler"),
+    ("demenz", "studenten"),
+    ("alzheimer", "jugendliche"),
+    ("alzheimer", "schüler"),
+    ("alzheimer", "studenten"),
 
     # Hobby topics with wrong audiences
     ("hund", "kleinunternehmer"),

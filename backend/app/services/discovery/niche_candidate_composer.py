@@ -31,6 +31,7 @@ from app.services.discovery.constraint_engine import (
 )
 from app.services.discovery.entity_normalizer import normalize_entity_name
 from app.services.discovery.template_engine import DEFAULT_TEMPLATES, template_engine
+from app.services.discovery.candidate_quality_gate import evaluate_candidate_quality
 
 
 @dataclass
@@ -172,6 +173,18 @@ def compose_niche_candidates(
                 # Generic check
                 if is_too_generic(phrase):
                     skipped_generic += 1
+                    continue
+                    
+                # Quality Gate Semantic Check
+                compat = evaluate_candidate_quality(
+                    candidate_name=phrase,
+                    topic_name=type_values.get("topic") or type_values.get("hobby") or type_values.get("object"),
+                    audience_name=type_values.get("audience") or type_values.get("profession"),
+                    problem_name=type_values.get("problem"),
+                    format_name=type_values.get("book_format"),
+                )
+                if not compat.allowed:
+                    skipped_blocked += 1
                     continue
 
                 # Determine risk
