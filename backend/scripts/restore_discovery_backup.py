@@ -1,5 +1,4 @@
 import argparse
-import csv
 import os
 import sys
 from pathlib import Path
@@ -39,63 +38,48 @@ def restore_backup(backup_dir: str):
 
         print("Restoring discovery tables...")
 
-        # We need to disable constraints or restore in order.
-        # However, restoring via INSERT might conflict with existing data if not clean.
-        # We assume the user is restoring onto a cleaned or partially cleaned state, or we TRUNCATE first.
-        print("WARNING: This will drop current discovery tables before restore.")
-        db.execute(text("UPDATE keywords SET source_niche_candidate_id = NULL WHERE source_niche_candidate_id IS NOT NULL"))
-        db.execute(text("DELETE FROM niche_candidate_keywords"))
-        db.execute(text("DELETE FROM discovery_entity_aliases"))
-        db.execute(text("DELETE FROM discovery_entity_relations"))
-        db.execute(text("DELETE FROM niche_candidates"))
-        db.execute(text("DELETE FROM discovery_entities"))
-        db.execute(text("DELETE FROM raw_discovery_items"))
+        # Obtain the underlying psycopg connection
+        conn = db.connection().connection
+
+        # Delete current state
+        with conn.cursor() as cur:
+            cur.execute("UPDATE keywords SET source_niche_candidate_id = NULL WHERE source_niche_candidate_id IS NOT NULL")
+            cur.execute("DELETE FROM niche_candidate_keywords")
+            cur.execute("DELETE FROM discovery_entity_aliases")
+            cur.execute("DELETE FROM discovery_entity_relations")
+            cur.execute("DELETE FROM niche_candidates")
+            cur.execute("DELETE FROM discovery_entities")
+            cur.execute("DELETE FROM raw_discovery_items")
+
+            # Restore tables natively handling JSONB/types
+            for table in tables:
+                csv_file = path / f"{table}.csv"
+                print(f"Restoring {table} from {csv_file.name}...")
+                with open(csv_file, "rb") as f:
+                    with cur.copy(f"COPY {table} FROM STDIN WITH CSV HEADER") as copy:
+                        while data := f.read(8192):
+                            copy.write(data)
+
+            print("Restoring keyword mappings...")
+            kw_file = path / "keywords_mapping.csv"
+            
+            # Use a temporary table for bulk updating the keywords table
+            cur.execute("CREATE TEMP TABLE temp_keywords_mapping (id INTEGER, source_niche_candidate_id INTEGER)")
+            with open(kw_file, "rb") as f:
+                with cur.copy("COPY temp_keywords_mapping FROM STDIN WITH CSV HEADER") as copy:
+                    while data := f.read(8192):
+                        copy.write(data)
+                        
+            cur.execute('''
+                UPDATE keywords 
+                SET source_niche_candidate_id = t.source_niche_candidate_id 
+                FROM temp_keywords_mapping t 
+                WHERE keywords.id = t.id
+            ''')
+            cur.execute("DROP TABLE temp_keywords_mapping")
+            
+        # Commit the entire restoration in a single transaction
         db.commit()
-
-        for table in tables:
-            csv_file = path / f"{table}.csv"
-            print(f"Restoring {table} from {csv_file.name}...")
-            with open(csv_file, "r", encoding="utf-8") as f:
-                reader = csv.reader(f)
-                headers = next(reader)
-                if not headers:
-                    continue
-                cols = ", ".join([f'"{h}"' for h in headers])
-                params = ", ".join([f":{h}" for h in headers])
-                sql = text(f"INSERT INTO {table} ({cols}) VALUES ({params})")
-                
-                batch = []
-                for row in reader:
-                    # Convert empty strings to None where applicable?
-                    # CSV writer writes None as empty string. We must handle nulls.
-                    # Since we used csv writer without special null handling, empty strings might be inserted.
-                    row_dict = {h: (v if v != "" else None) for h, v in zip(headers, row)}
-                    batch.append(row_dict)
-                    if len(batch) >= 1000:
-                        db.execute(sql, batch)
-                        batch = []
-                if batch:
-                    db.execute(sql, batch)
-            db.commit()
-
-        print("Restoring keyword mappings...")
-        kw_file = path / "keywords_mapping.csv"
-        with open(kw_file, "r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            headers = next(reader)
-            if headers:
-                batch = []
-                sql = text("UPDATE keywords SET source_niche_candidate_id = :source_niche_candidate_id WHERE id = :id")
-                for row in reader:
-                    row_dict = {h: (v if v != "" else None) for h, v in zip(headers, row)}
-                    batch.append(row_dict)
-                    if len(batch) >= 1000:
-                        db.execute(sql, batch)
-                        batch = []
-                if batch:
-                    db.execute(sql, batch)
-        db.commit()
-
         print(f"Successfully restored backup from {backup_dir}")
 
     except Exception as e:

@@ -48,7 +48,12 @@ backend/celerybeat-schedule
 Thumbs.db
 .DS_Store
 
-# Bulk Datasets and Diagnostics
+# SQLite Database
+*.sqlite
+*.sqlite3
+
+# Discovery Backups and Diagnostics
+/backend/backups/
 discovery_seed_entities*.csv.gz
 exported_candidates.csv
 backend/exported_candidates.csv

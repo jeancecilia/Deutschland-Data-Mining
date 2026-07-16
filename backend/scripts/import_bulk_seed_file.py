@@ -78,27 +78,26 @@ def main():
     has_domain = "domain" in header
     print(f"Has domain column: {has_domain}")
 
-    # ---- Row counting and domain validation (sample first 100K) ----
-    print("Sampling rows for domain balance check...")
+    # ---- Row counting and domain validation (scan entire file) ----
+    print("Scanning rows for domain balance check...")
     domain_sample: dict[str, int] = {}
     total_sampled = 0
     for row in reader:
         total_sampled += 1
-        if total_sampled > 100000:
-            break
         if has_domain:
             domain = row.get("domain", "").strip()
             if domain:
                 domain_sample[domain] = domain_sample.get(domain, 0) + 1
     fh.close()
 
+    max_share = 0
     print(f"Sampled rows: {total_sampled:,}")
     if domain_sample:
         total_domains = len(domain_sample)
         max_domain = max(domain_sample.values()) if domain_sample else 0
         max_share = max_domain / total_sampled if total_sampled > 0 else 0
-        print(f"Domains detected (in sample): {total_domains}")
-        print(f"Max domain count (in sample): {max_domain}")
+        print(f"Domains detected: {total_domains}")
+        print(f"Max domain count: {max_domain}")
         print(f"Max domain share: {max_share:.2%}")
 
         if max_share > MAX_DOMAIN_SHARE and not args.skip_domain_check:
@@ -124,10 +123,13 @@ def main():
 
     print(f"\nImporting: limit={args.limit:,}, offset={args.offset:,}, batch-size={args.batch_size:,}")
     db = SessionLocal()
+    lock_conn = None
     
     if not args.skip_lock:
-        if not _acquire_advisory_lock(db, _FULL_PIPELINE_LOCK_ID):
+        lock_conn = _get_lock_connection()
+        if not _acquire_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID):
             print("ERROR: Could not acquire pipeline lock. Another import or pipeline rebuild is running.")
+            lock_conn.close()
             sys.exit(1)
         
     try:
@@ -244,8 +246,20 @@ def main():
         if etype_counts:
             print(f"Entity types: {dict(sorted(etype_counts.items()))}")
 
+        return {
+            "total_read": total_read,
+            "total_inserted": total_inserted,
+            "total_skipped": total_skipped,
+            "max_share": max_share,
+            "source_id": source.id
+        }
+
     finally:
         db.close()
+        if lock_conn:
+            from app.worker.tasks import _release_advisory_lock
+            _release_advisory_lock(lock_conn, _FULL_PIPELINE_LOCK_ID)
+            lock_conn.close()
 
 if __name__ == "__main__":
     main()

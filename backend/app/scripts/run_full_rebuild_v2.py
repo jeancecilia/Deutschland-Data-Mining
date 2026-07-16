@@ -28,21 +28,20 @@ def reset_discovery_tables(db):
     print(f"Backing up discovery tables to /app/backups/discovery_backup_{timestamp}/...")
     try:
         import os
-        import csv
         os.makedirs(f"/app/backups/discovery_backup_{timestamp}", exist_ok=True)
-        for table in ["discovery_entity_relations", "niche_candidates", "discovery_entities", "raw_discovery_items", "discovery_entity_aliases", "niche_candidate_keywords"]:
-            result = db.execute(text(f"SELECT * FROM {table}"))
-            with open(f"/app/backups/discovery_backup_{timestamp}/{table}.csv", "w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerow(result.keys())
-                writer.writerows(result)
-        
-        # Backup keyword mappings
-        kw_res = db.execute(text("SELECT id, source_niche_candidate_id FROM keywords WHERE source_niche_candidate_id IS NOT NULL"))
-        with open(f"/app/backups/discovery_backup_{timestamp}/keywords_mapping.csv", "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(kw_res.keys())
-            writer.writerows(kw_res)
+        conn = db.connection().connection
+        with conn.cursor() as cur:
+            for table in ["discovery_entity_relations", "niche_candidates", "discovery_entities", "raw_discovery_items", "discovery_entity_aliases", "niche_candidate_keywords"]:
+                with open(f"/app/backups/discovery_backup_{timestamp}/{table}.csv", "wb") as f:
+                    with cur.copy(f"COPY {table} TO STDOUT WITH CSV HEADER") as copy:
+                        for data in copy:
+                            f.write(data)
+            
+            # Backup keyword mappings
+            with open(f"/app/backups/discovery_backup_{timestamp}/keywords_mapping.csv", "wb") as f:
+                with cur.copy("COPY (SELECT id, source_niche_candidate_id FROM keywords WHERE source_niche_candidate_id IS NOT NULL) TO STDOUT WITH CSV HEADER") as copy:
+                    for data in copy:
+                        f.write(data)
             
         print("Backup complete.")
     except Exception as e:
@@ -60,7 +59,8 @@ def reset_discovery_tables(db):
     db.execute(text("DELETE FROM discovery_entities"))
     db.execute(text("DELETE FROM raw_discovery_items"))
     db.commit()
-
+    
+    return f"/app/backups/discovery_backup_{timestamp}"
 
 def get_unprocessed_raw_count(db):
     return db.scalar(select(func.count()).select_from(RawDiscoveryItem).where(RawDiscoveryItem.status == 'new'))
@@ -162,8 +162,9 @@ def run():
         overview_before = get_discovery_overview(db)
         print(json.dumps(json.loads(overview_before.model_dump_json()), indent=2))
         
+        backup_dir = None
         if args.reset:
-            reset_discovery_tables(db)
+            backup_dir = reset_discovery_tables(db)
                 
         if args.import_seeds:
             print("\nImporting manifest seeds...")
@@ -183,9 +184,23 @@ def run():
             if args.bulk_file:
                 print("Importing bulk seed file...")
                 from scripts.import_bulk_seed_file import main as import_bulk_main
-                sys.argv = ["import_bulk_seed_file.py", "--file", args.bulk_file, "--limit", str(args.bulk_limit), "--batch-size", "5000", "--skip-lock", "--skip-domain-check"]
-                import_bulk_main()
+                sys.argv = ["import_bulk_seed_file.py", "--file", args.bulk_file, "--limit", str(args.bulk_limit), "--batch-size", "5000", "--skip-lock"]
+                summary = import_bulk_main()
                 sys.argv = old_argv
+                
+                if summary:
+                    # Assertions for bulk file
+                    expected_target = args.bulk_limit
+                    if summary["total_read"] < args.bulk_limit:
+                        expected_target = summary["total_read"]
+                    if summary["total_inserted"] < expected_target * 0.99:
+                        raise RuntimeError(f"Bulk import inserted {summary['total_inserted']} which is less than 99% of expected {expected_target}")
+                    if summary["max_share"] > 0.015:
+                        raise RuntimeError(f"Bulk import domain imbalance: {summary['max_share']:.2%} exceeds 1.5%")
+                    bulk_count = db.scalar(select(func.count()).select_from(RawDiscoveryItem).where(RawDiscoveryItem.discovery_source_id == summary["source_id"]))
+                    if bulk_count < expected_target * 0.99:
+                        raise RuntimeError(f"Missing bulk raw items in database: {bulk_count}/{expected_target}")
+                    print("Bulk metadata coverage verified.")
             
         print("\n--- Phase: Entity Extraction ---")
         iteration = 1
@@ -257,6 +272,11 @@ def run():
         import traceback
         traceback.print_exc()
         print(f"ERROR: Rebuild failed: {e}")
+        if 'args' in locals() and args.reset and backup_dir:
+            print("Initiating automatic rollback...")
+            import subprocess
+            subprocess.run([sys.executable, "scripts/restore_discovery_backup.py", "--backup-dir", backup_dir], check=True)
+            print("Rollback completed successfully.")
         sys.exit(1)
     finally:
         db.close()
